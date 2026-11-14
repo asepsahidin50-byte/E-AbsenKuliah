@@ -495,10 +495,6 @@
             app = initializeApp(firebaseConfig);
             db = getFirestore(app);
             auth = getAuth(app);
-        } else {
-            document.getElementById('preview-badge').classList.remove('hidden');
-            document.getElementById('app-wrapper').classList.add('pt-6');
-            document.getElementById('demo-login-info').classList.remove('hidden');
         }
 
         // ==========================================
@@ -617,21 +613,33 @@
         let currentUser = null; // Data mahasiswa yang login
         let isAdminMode = false;
         
-        const toast = document.getElementById('toast');
         window.showToast = function(msg, type = 'success') {
-            document.getElementById('toast-msg').innerText = msg;
-            document.getElementById('toast-icon').innerHTML = type === 'success' ? '<i class="fas fa-check-circle text-green-400"></i>' : '<i class="fas fa-exclamation-triangle text-red-400"></i>';
-            toast.classList.remove('translate-y-20', 'opacity-0');
-            setTimeout(() => { toast.classList.add('translate-y-20', 'opacity-0'); }, 3000);
+            const toastEl = document.getElementById('toast');
+            const msgEl = document.getElementById('toast-msg');
+            const iconEl = document.getElementById('toast-icon');
+            
+            if (msgEl) msgEl.innerText = msg;
+            if (iconEl) iconEl.innerHTML = type === 'success' ? '<i class="fas fa-check-circle text-green-400"></i>' : '<i class="fas fa-exclamation-triangle text-red-400"></i>';
+            if (toastEl) {
+                toastEl.classList.remove('translate-y-20', 'opacity-0');
+                setTimeout(() => { toastEl.classList.add('translate-y-20', 'opacity-0'); }, 3000);
+            }
         }
 
         const pages = ['dashboard', 'auth', 'mahasiswa', 'admin'];
-        let currentSesiList = []; // State array untuk sesi pertemuan
         
         window.showPage = function(pageId, title) {
-            pages.forEach(p => document.getElementById(`page-${p}`).classList.add('hidden'));
-            document.getElementById(`page-${pageId}`).classList.remove('hidden');
-            document.getElementById('page-title').innerText = title;
+            pages.forEach(p => {
+                const pageEl = document.getElementById(`page-${p}`);
+                if (pageEl) pageEl.classList.add('hidden');
+            });
+            
+            const activePage = document.getElementById(`page-${pageId}`);
+            if (activePage) activePage.classList.remove('hidden');
+            
+            const titleEl = document.getElementById('page-title');
+            if (titleEl) titleEl.innerText = title;
+            
             updateNavigationUI(pageId);
             
             if(pageId === 'dashboard') loadDashboard();
@@ -885,14 +893,23 @@
         // ==========================================
         function updateNavigationUI(activePageId) {
             const navItems = [
-                { id: 'dashboard', icon: 'fa-chart-pie', label: 'Dashboard' },
-                ...(currentUser ? [{ id: 'mahasiswa', icon: 'fa-user-graduate', label: 'Area Mahasiswa' }] : []),
-                ...(isAdminMode ? [{ id: 'admin', icon: 'fa-shield-alt', label: 'Area Admin' }] : [])
+                { id: 'dashboard', icon: 'fa-chart-pie', label: 'Dashboard', action: "showPage('dashboard', 'Dashboard')" }
             ];
 
+            if (currentUser) {
+                navItems.push({ id: 'mahasiswa', icon: 'fa-user-graduate', label: 'Area Mahasiswa', action: "showPage('mahasiswa', 'Area Mahasiswa')" });
+            } else if (isAdminMode) {
+                navItems.push({ id: 'admin', icon: 'fa-shield-alt', label: 'Area Admin', action: "showPage('admin', 'Area Admin / Dosen')" });
+            } else {
+                // Menu Auth diletakkan sejajar persis dengan Dashboard
+                navItems.push({ id: 'auth-mhs', icon: 'fa-sign-in-alt', label: 'Login Mhs', action: "switchAuth('mhs')" });
+                navItems.push({ id: 'auth-reg', icon: 'fa-user-plus', label: 'Daftar Baru', action: "switchAuth('reg')" });
+                navItems.push({ id: 'auth-admin', icon: 'fa-shield-alt', label: 'Login Admin', action: "switchAuth('admin')" });
+            }
+
             const renderNav = (items, isMobile) => items.map(item => `
-                <a href="javascript:void(0)" onclick="showPage('${item.id}', '${item.label}')" 
-                   class="${isMobile ? 'flex flex-col items-center justify-center w-16 h-16 text-gray-500' : 'flex items-center gap-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-corporate-50 hover:text-corporate-600 transition-colors'} 
+                <a href="javascript:void(0)" onclick="${item.action}" 
+                   class="${isMobile ? 'flex flex-col items-center justify-center w-16 h-16 text-gray-500 hover:text-corporate-600 transition-colors' : 'flex items-center gap-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-corporate-50 hover:text-corporate-600 transition-colors'} 
                           ${activePageId === item.id ? (isMobile ? 'mobile-nav-active' : 'bg-corporate-50 text-corporate-600 font-semibold') : ''}">
                     <i class="fas ${item.icon} ${isMobile ? 'text-xl mb-1' : ''}"></i>
                     <span class="${isMobile ? 'text-[10px]' : ''}">${item.label}</span>
@@ -900,13 +917,17 @@
             `).join('');
 
             document.getElementById('desktop-nav').innerHTML = renderNav(navItems, false);
+            
+            // Generate Navigasi Bawah (Mobile)
             document.getElementById('mobile-nav').innerHTML = renderNav(navItems, true);
-
+            
             // Header Actions (Top Right)
             const hActions = document.getElementById('header-actions');
+            const dUserInfo = document.getElementById('desktop-user-info');
+            
             if (currentUser || isAdminMode) {
                 hActions.innerHTML = `<button onclick="logout()" class="bg-red-50 text-red-600 hover:bg-red-100 px-4 py-2 rounded-lg text-sm font-semibold transition-colors">Keluar</button>`;
-                document.getElementById('desktop-user-info').innerHTML = `
+                dUserInfo.innerHTML = `
                     <div class="flex items-center gap-3">
                         <div class="w-10 h-10 rounded-full bg-corporate-100 flex items-center justify-center text-corporate-600 font-bold">${(currentUser?.nama || 'A')[0]}</div>
                         <div class="overflow-hidden">
@@ -914,13 +935,11 @@
                             <p class="text-xs text-gray-500">${currentUser ? 'Mahasiswa' : 'Koordinator'}</p>
                         </div>
                     </div>`;
+                dUserInfo.classList.remove('hidden');
             } else {
-                hActions.innerHTML = `
-                    <button onclick="switchAuth('mhs')" class="bg-corporate-50 text-corporate-600 hover:bg-corporate-100 px-3 py-2 rounded-lg text-sm font-semibold transition-colors border border-corporate-200">Login Mhs</button>
-                    <button onclick="switchAuth('reg')" class="bg-corporate-600 text-white hover:bg-corporate-700 px-3 py-2 rounded-lg text-sm font-semibold shadow transition-colors">Daftar</button>
-                    <button onclick="switchAuth('admin')" class="bg-gray-800 text-white hover:bg-black px-3 py-2 rounded-lg text-sm font-semibold shadow transition-colors">Admin</button>
-                `;
-                document.getElementById('desktop-user-info').innerHTML = `<p class="text-xs text-gray-400 text-center">Silakan login untuk akses fitur.</p>`;
+                hActions.innerHTML = ``; // Kosongkan header atas
+                dUserInfo.innerHTML = ``; // Kosongkan profil karena sudah masuk list menu utama
+                dUserInfo.classList.add('hidden'); // Sembunyikan garis border
             }
         }
 
@@ -937,7 +956,10 @@
             document.getElementById('form-login-admin').classList.add('hidden');
             document.getElementById('form-register').classList.add('hidden');
             
-            showPage('auth', type === 'reg' ? 'Daftar Akun' : 'Login');
+            showPage('auth', type === 'reg' ? 'Daftar Akun' : (type === 'admin' ? 'Login Admin' : 'Login Mahasiswa'));
+            
+            // Memaksa penyorotan menu (highlight biru) pada tombol sidebar yang benar
+            updateNavigationUI('auth-' + type);
             
             if (type === 'mhs') {
                 document.getElementById('form-login-mhs').classList.remove('hidden');
@@ -1300,6 +1322,11 @@
 
         // Init App
         window.addEventListener('DOMContentLoaded', () => {
+            if (IS_PREVIEW) {
+                document.getElementById('preview-badge')?.classList.remove('hidden');
+                document.getElementById('app-wrapper')?.classList.add('pt-6');
+                document.getElementById('demo-login-info')?.classList.remove('hidden');
+            }
             showPage('dashboard', 'Dashboard');
         });
 
