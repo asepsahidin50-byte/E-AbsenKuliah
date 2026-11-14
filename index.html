@@ -1,0 +1,1250 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aplikasi Hadir Kuliah</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- SheetJS (Untuk Ekspor Excel) -->
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        corporate: { 50: '#f0f9ff', 100: '#e0f2fe', 500: '#0ea5e9', 600: '#0284c7', 700: '#0369a1', 900: '#0c4a6e' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #f8fafc; font-family: 'Inter', sans-serif; }
+        .glass { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.3); }
+        .hide-scroll::-webkit-scrollbar { display: none; }
+        .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+        .nav-active { color: #0284c7; border-bottom: 2px solid #0284c7; font-weight: 600; }
+        .mobile-nav-active { color: #0284c7; }
+    </style>
+</head>
+<body class="text-gray-800 antialiased overflow-hidden">
+
+    <!-- PREVIEW BADGE -->
+    <div id="preview-badge" class="fixed top-0 left-0 right-0 bg-yellow-400 text-yellow-900 text-center text-xs font-bold py-1 z-[100] shadow-sm hidden">
+        MODE UJI COBA (PREVIEW) AKTIF - Data tidak tersimpan ke server.
+    </div>
+
+    <!-- MODAL IMAGE VIEWER -->
+    <div id="image-modal" class="fixed inset-0 z-[150] bg-black bg-opacity-80 hidden flex justify-center items-center p-4">
+        <div class="relative max-w-3xl w-full">
+            <button onclick="closeImageModal()" class="absolute -top-10 right-0 text-white hover:text-red-400 font-bold text-xl">&times; Tutup</button>
+            <img id="modal-img" src="" alt="Screenshot" class="w-full h-auto rounded-lg shadow-2xl">
+        </div>
+    </div>
+
+    <!-- MODAL EDIT MAHASISWA -->
+    <div id="edit-mhs-modal" class="fixed inset-0 z-[150] bg-black bg-opacity-60 hidden flex justify-center items-center p-4">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
+            <div class="bg-corporate-600 p-4 text-white flex justify-between items-center">
+                <h3 class="font-bold text-lg">Edit Mahasiswa</h3>
+                <button onclick="closeEditMhsModal()" class="text-white hover:text-red-200 font-bold text-xl">&times;</button>
+            </div>
+            <form id="form-edit-mhs" class="p-6 space-y-4">
+                <input type="hidden" id="edit-mhs-id">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Nama Lengkap</label>
+                    <input type="text" id="edit-mhs-nama" required class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-corporate-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Asal Kota</label>
+                    <input type="text" id="edit-mhs-kota" required class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-corporate-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Profesi</label>
+                    <input type="text" id="edit-mhs-profesi" required class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-corporate-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                    <input type="text" id="edit-mhs-pass" required class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-corporate-500 outline-none">
+                </div>
+                <div class="flex justify-end gap-2 mt-4">
+                    <button type="button" onclick="closeEditMhsModal()" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-lg transition-colors">Batal</button>
+                    <button type="submit" id="btn-submit-edit" class="bg-corporate-600 hover:bg-corporate-700 text-white font-bold py-2 px-4 rounded-lg transition-colors">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MAIN APP WRAPPER -->
+    <div class="flex h-screen w-full pt-5" id="app-wrapper">
+        
+        <!-- SIDEBAR (Desktop) -->
+        <aside class="hidden md:flex flex-col w-64 h-full glass border-r shadow-sm z-40 fixed">
+            <div class="p-6 flex items-center gap-3 cursor-pointer" onclick="showPage('dashboard', 'Dashboard')">
+                <div class="bg-corporate-600 text-white p-2 rounded-lg"><i class="fas fa-graduation-cap text-xl"></i></div>
+                <h1 class="text-xl font-bold text-corporate-900 tracking-tight" id="app-logo-title">HadirKuliah</h1>
+            </div>
+            <nav class="flex-1 px-4 space-y-2 mt-4" id="desktop-nav">
+                <!-- Nav items generated by JS -->
+            </nav>
+            <div class="p-4 border-t" id="desktop-user-info">
+                <!-- User info / Auth buttons -->
+            </div>
+        </aside>
+
+        <!-- BOTTOM NAV (Mobile) -->
+        <nav class="md:hidden fixed bottom-0 w-full glass border-t shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-50 flex justify-around items-center h-16 pb-safe" id="mobile-nav">
+            <!-- Nav items generated by JS -->
+        </nav>
+
+        <!-- MAIN CONTENT AREA -->
+        <main class="flex-1 h-full md:ml-64 overflow-y-auto hide-scroll pb-24 md:pb-6 relative bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]">
+            
+            <!-- HEADER (Mobile/Desktop Top Bar) -->
+            <header class="sticky top-0 z-30 glass px-4 md:px-6 py-3 md:py-4 flex flex-wrap justify-between items-center shadow-sm gap-3">
+                <div class="flex items-center gap-3">
+                    <div class="bg-corporate-600 text-white p-2 rounded-lg md:hidden"><i class="fas fa-graduation-cap text-sm"></i></div>
+                    <div class="flex flex-col">
+                        <h1 class="text-lg font-bold text-corporate-900 leading-tight md:hidden" id="mobile-app-title">HadirKuliah</h1>
+                        <h2 class="text-sm md:text-xl font-bold text-gray-500 md:text-gray-800 truncate" id="page-title">Dashboard</h2>
+                    </div>
+                </div>
+                <div class="flex gap-2 items-center flex-wrap" id="header-actions">
+                    <!-- Dynamic Top Right Buttons -->
+                </div>
+            </header>
+
+            <!-- SECTION: DASHBOARD -->
+            <section id="page-dashboard" class="p-4 md:p-6 max-w-5xl mx-auto hidden space-y-4 md:space-y-6">
+                <!-- Settings Banner -->
+                <div id="dash-settings-banner" class="bg-gradient-to-r from-corporate-600 to-corporate-800 rounded-2xl p-5 md:p-8 text-white shadow-lg hidden relative overflow-hidden">
+                    <!-- Ornamen background -->
+                    <div class="absolute top-0 right-0 -mt-10 -mr-10 w-40 h-40 bg-white opacity-10 rounded-full blur-2xl"></div>
+                    
+                    <div class="flex justify-between items-center flex-col md:flex-row gap-5 md:gap-6 relative z-10 text-center md:text-left">
+                        <div class="flex-1 w-full">
+                            <p class="text-corporate-100 text-[10px] md:text-xs font-bold mb-2 md:mb-3 tracking-widest uppercase border-b border-white/20 pb-2 inline-block"><span id="dash-univ">Universitas</span> • <span id="dash-semester">Semester</span></p>
+                            <p class="text-corporate-100 text-xs md:text-sm font-medium mb-1 tracking-wide uppercase block">Mata Kuliah</p>
+                            <h3 class="text-xl md:text-3xl font-bold mb-3 text-white drop-shadow-sm" id="dash-matkul">-</h3>
+                            <div class="inline-flex items-center gap-2 bg-black/20 px-3 py-1.5 md:py-2 rounded-lg backdrop-blur-sm border border-white/10">
+                                <i class="fas fa-chalkboard-teacher text-corporate-100 text-sm"></i>
+                                <p class="text-xs md:text-sm text-corporate-50">Dosen: <span id="dash-dosen" class="font-semibold text-white">-</span></p>
+                            </div>
+                        </div>
+                        <div class="bg-white p-4 md:p-5 rounded-xl shadow-md w-full md:w-auto md:min-w-[220px] border border-gray-100">
+                            <p class="text-[10px] md:text-xs text-gray-500 mb-1 font-medium uppercase tracking-wider">Koordinator Kelas</p>
+                            <p class="font-bold text-lg md:text-xl text-gray-800 mb-3 md:mb-4" id="dash-koor">-</p>
+                            <a href="javascript:void(0)" id="dash-wa-link" target="_blank" class="w-full flex justify-center items-center gap-2 bg-[#25D366] hover:bg-[#20b958] text-white text-xs md:text-sm font-bold py-2 md:py-2.5 px-4 rounded-lg shadow-sm transition-colors">
+                                <i class="fab fa-whatsapp text-base md:text-lg"></i> Hubungi WA
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass p-5 md:p-6 rounded-2xl shadow-sm bg-white">
+                    <h3 class="font-bold text-gray-800 mb-4 md:mb-6 text-base md:text-lg">Ringkasan Kehadiran</h3>
+                    <div class="grid grid-cols-2 gap-4 md:gap-8 mb-6">
+                        <!-- Total Mahasiswa -->
+                        <div class="text-center md:text-left border-b md:border-b-0 pb-3 md:pb-0">
+                            <i class="fas fa-user-friends text-blue-500 mb-1 md:mb-2 text-lg md:text-xl"></i>
+                            <h3 class="text-2xl md:text-3xl font-bold text-gray-800" id="stat-total">0</h3>
+                            <p class="text-gray-500 text-[10px] md:text-sm mt-1">Total Mhs (Aktif)</p>
+                        </div>
+                        <!-- Sudah Hadir -->
+                        <div class="text-center md:text-left border-b md:border-b-0 pb-3 md:pb-0">
+                            <i class="fas fa-user-check text-green-500 mb-1 md:mb-2 text-lg md:text-xl"></i>
+                            <h3 class="text-2xl md:text-3xl font-bold text-gray-800" id="stat-hadir">0</h3>
+                            <p class="text-gray-500 text-[10px] md:text-sm mt-1">Hadir (Sesi Terakhir)</p>
+                        </div>
+                        <!-- Belum Hadir -->
+                        <div class="text-center md:text-left">
+                            <i class="fas fa-user-times text-orange-500 mb-1 md:mb-2 text-lg md:text-xl"></i>
+                            <h3 class="text-2xl md:text-3xl font-bold text-gray-800" id="stat-belum">0</h3>
+                            <p class="text-gray-500 text-[10px] md:text-sm mt-1">Belum Hadir (Terakhir)</p>
+                        </div>
+                        <!-- Total Pertemuan -->
+                        <div class="text-center md:text-left">
+                            <i class="fas fa-calendar-check text-purple-500 mb-1 md:mb-2 text-lg md:text-xl"></i>
+                            <h3 class="text-2xl md:text-3xl font-bold text-gray-800" id="stat-pertemuan">0</h3>
+                            <p class="text-gray-500 text-[10px] md:text-sm mt-1">Total Sesi Disetujui</p>
+                        </div>
+                    </div>
+
+                    <h3 class="font-bold text-gray-800 mt-6 md:mt-8 mb-3 md:mb-4 text-xs md:text-sm">Progres Kehadiran Sesi Terakhir</h3>
+                    <div class="flex justify-between items-end mb-2">
+                        <span class="text-2xl md:text-3xl font-bold text-green-600" id="stat-progress-percent">0%</span>
+                        <span class="text-[10px] md:text-sm text-gray-500" id="stat-progress-text">0 dari 0 mahasiswa hadir</span>
+                    </div>
+                    <div class="w-full bg-gray-100 rounded-full h-2 md:h-3">
+                        <div class="bg-green-500 h-2 md:h-3 rounded-full transition-all duration-1000" id="stat-progress-bar" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <div class="glass p-5 md:p-6 rounded-2xl shadow-sm bg-white mt-4 md:mt-6">
+                    <h3 class="font-bold text-gray-800 mb-3 md:mb-4 text-base md:text-lg">Aktivitas Pertemuan Terakhir</h3>
+                    <div class="space-y-3" id="recent-activity">
+                        <p class="text-xs md:text-sm text-gray-500 italic">Belum ada aktivitas pertemuan.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION: LOGIN / REGISTER -->
+            <section id="page-auth" class="p-6 max-w-md mx-auto hidden mt-10">
+                <div class="glass p-8 rounded-3xl shadow-lg border border-white/50">
+                    <div class="text-center mb-8">
+                        <div class="bg-corporate-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 text-corporate-600 text-2xl"><i class="fas fa-user-circle"></i></div>
+                        <h2 class="text-2xl font-bold text-gray-800" id="auth-title">Login Mahasiswa</h2>
+                        <p class="text-gray-500 text-sm mt-1" id="auth-subtitle">Masukkan nama dan password.</p>
+                        
+                        <!-- Preview info badge -->
+                        <div id="demo-login-info" class="mt-3 text-xs bg-blue-50 text-blue-800 p-2 rounded border border-blue-200 hidden text-left">
+                            <strong>Data Demo:</strong><br>
+                            Mhs: Budi (Pass: 123) <br>
+                            Admin: admin@kuliah.com (Pass: admin123)
+                        </div>
+                    </div>
+
+                    <!-- LOGIN MHS FORM -->
+                    <form id="form-login-mhs" class="space-y-4 hidden">
+                        <div><label class="block text-sm font-medium text-gray-700 mb-1">Nama Mahasiswa</label><input type="text" id="login-mhs-nama" required class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-corporate-500 outline-none transition-all"></div>
+                        <div><label class="block text-sm font-medium text-gray-700 mb-1">Password</label><input type="password" id="login-mhs-pass" required class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-corporate-500 outline-none transition-all"></div>
+                        <button type="submit" class="w-full bg-corporate-600 hover:bg-corporate-700 text-white font-bold py-3 rounded-xl shadow-md transition-all mt-6">Masuk Area Mahasiswa</button>
+                    </form>
+
+                    <!-- LOGIN ADMIN FORM -->
+                    <form id="form-login-admin" class="space-y-4 hidden">
+                        <div><label class="block text-sm font-medium text-gray-700 mb-1">Email Admin</label><input type="email" id="login-admin-email" required class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-corporate-500 outline-none transition-all"></div>
+                        <div><label class="block text-sm font-medium text-gray-700 mb-1">Password</label><input type="password" id="login-admin-pass" required class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-corporate-500 outline-none transition-all"></div>
+                        <button type="submit" class="w-full bg-gray-800 hover:bg-black text-white font-bold py-3 rounded-xl shadow-md transition-all mt-6">Masuk Area Admin</button>
+                    </form>
+
+                    <!-- REGISTER FORM -->
+                    <form id="form-register" class="space-y-4 hidden">
+                        <div><label class="block text-sm font-medium text-gray-700 mb-1">Nama Lengkap</label><input type="text" id="reg-nama" required class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-corporate-500 outline-none transition-all"></div>
+                        <div><label class="block text-sm font-medium text-gray-700 mb-1">Asal Kota</label><input type="text" id="reg-kota" required class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-corporate-500 outline-none transition-all"></div>
+                        <div><label class="block text-sm font-medium text-gray-700 mb-1">Profesi</label><input type="text" id="reg-profesi" required class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-corporate-500 outline-none transition-all"></div>
+                        <div><label class="block text-sm font-medium text-gray-700 mb-1">Buat Password</label><input type="text" id="reg-pass" required class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-corporate-500 outline-none transition-all"></div>
+                        <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-xl shadow-md transition-all mt-6">Daftar Akun Baru</button>
+                    </form>
+                </div>
+            </section>
+
+            <!-- SECTION: MAHASISWA AREA -->
+            <section id="page-mahasiswa" class="p-6 max-w-4xl mx-auto hidden space-y-6">
+                <div class="glass p-6 rounded-2xl shadow-sm flex items-center justify-between bg-gradient-to-r from-corporate-50 to-white">
+                    <div><h3 class="text-xl font-bold text-gray-800" id="mhs-welcome-name">Halo, Mahasiswa!</h3><p class="text-sm text-gray-500">Silakan isi kehadiran Anda.</p></div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Form Absen -->
+                    <div class="glass p-6 rounded-2xl shadow-sm">
+                        <h4 class="font-bold text-gray-800 mb-4 border-b pb-2">Form Kehadiran</h4>
+                        <form id="form-absen" class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Sesi Pertemuan</label>
+                                <select id="absen-pertemuan" required class="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-corporate-500 outline-none bg-white">
+                                    <option value="">-- Pilih Pertemuan --</option>
+                                    <!-- Dynamic Options from Setting -->
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Upload Bukti Screenshot (Zoom/Meet)</label>
+                                <div class="border-2 border-dashed border-gray-300 rounded-xl p-4 text-center hover:bg-gray-50 transition-colors cursor-pointer" onclick="document.getElementById('absen-file').click()">
+                                    <i class="fas fa-cloud-upload-alt text-2xl text-corporate-500 mb-2"></i>
+                                    <p class="text-sm text-gray-500" id="file-name-label">Klik untuk pilih gambar (JPG/PNG)</p>
+                                </div>
+                                <input type="file" id="absen-file" accept="image/*" class="hidden" required>
+                                <input type="hidden" id="absen-base64">
+                            </div>
+                            <button type="submit" id="btn-submit-absen" class="w-full bg-corporate-600 hover:bg-corporate-700 text-white font-bold py-3 rounded-xl shadow-md transition-all mt-4">Kirim Kehadiran</button>
+                        </form>
+                    </div>
+
+                    <!-- Riwayat Absen -->
+                    <div class="glass p-6 rounded-2xl shadow-sm">
+                        <h4 class="font-bold text-gray-800 mb-4 border-b pb-2">Riwayat Kehadiran Saya</h4>
+                        <div class="space-y-3" id="mhs-history-list">
+                            <!-- Rendered by JS -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION: ADMIN AREA -->
+            <section id="page-admin" class="p-6 max-w-5xl mx-auto hidden space-y-6">
+                
+                <!-- Admin Settings Form -->
+                <div class="glass p-6 rounded-2xl shadow-sm bg-gradient-to-br from-gray-50 to-gray-100">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2"><i class="fas fa-cog mr-2"></i> Pengaturan Aplikasi & Mata Kuliah</h3>
+                    <form id="form-admin-settings" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div><label class="block text-xs font-medium text-gray-600">Judul Aplikasi (Logo)</label><input type="text" id="set-apptitle" placeholder="Contoh: HadirKuliah" class="w-full px-3 py-2 text-sm rounded border outline-none focus:border-corporate-500"></div>
+                        <div><label class="block text-xs font-medium text-gray-600">Universitas / Institusi</label><input type="text" id="set-univ" placeholder="Contoh: Universitas Indonesia" class="w-full px-3 py-2 text-sm rounded border outline-none focus:border-corporate-500"></div>
+                        <div><label class="block text-xs font-medium text-gray-600">Semester</label><input type="text" id="set-semester" placeholder="Contoh: Ganjil 2026/2027" class="w-full px-3 py-2 text-sm rounded border outline-none focus:border-corporate-500"></div>
+                        <div><label class="block text-xs font-medium text-gray-600">Nama Mata Kuliah</label><input type="text" id="set-matkul" placeholder="Contoh: Pemrograman Web" class="w-full px-3 py-2 text-sm rounded border outline-none focus:border-corporate-500"></div>
+                        <div><label class="block text-xs font-medium text-gray-600">Dosen Pengampu</label><input type="text" id="set-dosen" placeholder="Nama Dosen" class="w-full px-3 py-2 text-sm rounded border outline-none focus:border-corporate-500"></div>
+                        <div><label class="block text-xs font-medium text-gray-600">Nama Koordinator Mahasiswa</label><input type="text" id="set-koor" placeholder="Nama Ketua Kelas" class="w-full px-3 py-2 text-sm rounded border outline-none focus:border-corporate-500"></div>
+                        <div><label class="block text-xs font-medium text-gray-600">Nomor HP / WA Koordinator</label><input type="text" id="set-wa" placeholder="Contoh: 628123456789 (Gunakan 62)" class="w-full px-3 py-2 text-sm rounded border outline-none focus:border-corporate-500"></div>
+                        
+                        <!-- Manajemen Sesi Pertemuan Lanjutan -->
+                        <div class="md:col-span-2 mt-4 border-t pt-4">
+                            <label class="block text-sm font-bold text-gray-800 mb-2"><i class="fas fa-list-ul mr-1"></i> Manajemen Sesi Pertemuan Terjadwal</label>
+                            <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+                                <div class="grid grid-cols-1 md:grid-cols-5 gap-3 mb-4 items-end">
+                                    <div class="md:col-span-2">
+                                        <label class="block text-xs font-medium text-gray-600 mb-1">Nama Sesi (Misal: Pertemuan 1)</label>
+                                        <input type="text" id="add-sesi-nama" placeholder="Ketik nama sesi..." class="w-full px-3 py-2 text-sm rounded border outline-none focus:border-corporate-500">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-600 mb-1">Tanggal</label>
+                                        <input type="date" id="add-sesi-tgl" class="w-full px-3 py-2 text-sm rounded border outline-none focus:border-corporate-500">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-600 mb-1">Jam</label>
+                                        <input type="time" id="add-sesi-jam" class="w-full px-3 py-2 text-sm rounded border outline-none focus:border-corporate-500">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-600 mb-1">Tipe</label>
+                                        <select id="add-sesi-tipe" class="w-full px-3 py-2 text-sm rounded border outline-none focus:border-corporate-500">
+                                            <option value="Online">Online</option>
+                                            <option value="Offline">Offline</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <button type="button" onclick="addSesiItem()" class="bg-corporate-600 hover:bg-corporate-700 text-white text-xs font-bold py-2 px-4 rounded shadow transition-colors"><i class="fas fa-plus mr-1"></i> Tambah ke Daftar</button>
+                                
+                                <div class="mt-4 overflow-x-auto">
+                                    <table class="w-full text-left text-sm text-gray-600 border rounded-lg overflow-hidden">
+                                        <thead class="bg-gray-50 text-xs">
+                                            <tr>
+                                                <th class="p-2 border-b">Nama Sesi</th>
+                                                <th class="p-2 border-b">Tanggal & Jam</th>
+                                                <th class="p-2 border-b">Tipe</th>
+                                                <th class="p-2 border-b text-center">Aksi</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="sesi-list-tbody">
+                                            <!-- Rendered dynamically -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <p class="text-[10px] text-gray-500 mt-2">Daftar sesi ini akan otomatis muncul di pilihan absen mahasiswa saat mereka login.</p>
+                        </div>
+
+                        <div class="md:col-span-2 text-right mt-2">
+                            <button type="submit" id="btn-save-settings" class="bg-gray-800 hover:bg-black text-white text-sm font-bold py-2 px-6 rounded-lg shadow transition-colors">Simpan Pengaturan</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Antrean Validasi -->
+                <div class="glass p-6 rounded-2xl shadow-sm">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2">Antrean Validasi Kehadiran</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm text-gray-600">
+                            <thead class="text-xs text-gray-700 uppercase bg-gray-100">
+                                <tr>
+                                    <th class="px-4 py-3">Waktu</th>
+                                    <th class="px-4 py-3">Mahasiswa</th>
+                                    <th class="px-4 py-3">Pertemuan</th>
+                                    <th class="px-4 py-3 text-center">Bukti</th>
+                                    <th class="px-4 py-3 text-center">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-pending-tbody">
+                                <!-- Rendered by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Rekap & Unduh CSV (Baru) -->
+                <div class="glass p-6 rounded-2xl shadow-sm border-l-4 border-green-500">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2"><i class="fas fa-file-excel mr-2 text-green-600"></i> Unduh Rekap Kehadiran (Excel)</h3>
+                    <div class="flex flex-col md:flex-row gap-4 items-end">
+                        <div class="flex-1 w-full">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Pilih Sesi Pertemuan</label>
+                            <select id="download-sesi" class="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-corporate-500 outline-none bg-white">
+                                <option value="all">Semua Pertemuan (Keseluruhan)</option>
+                                <!-- Dynamic options here -->
+                            </select>
+                        </div>
+                        <button onclick="downloadRekapExcel()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-xl shadow-md transition-all h-[42px] whitespace-nowrap">
+                            <i class="fas fa-file-excel mr-2"></i> Unduh Excel
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Daftar Mahasiswa -->
+                <div class="glass p-6 rounded-2xl shadow-sm">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2">Daftar Mahasiswa Terdaftar</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm text-gray-600">
+                            <thead class="text-xs text-gray-700 uppercase bg-gray-100">
+                                <tr>
+                                    <th class="px-4 py-3">Nama</th>
+                                    <th class="px-4 py-3">Asal Kota</th>
+                                    <th class="px-4 py-3">Profesi</th>
+                                    <th class="px-4 py-3">Status</th>
+                                    <th class="px-4 py-3 text-center">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-mhs-tbody">
+                                <!-- Rendered by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- TOAST NOTIFICATION -->
+    <div id="toast" class="fixed bottom-20 md:bottom-10 left-5 right-5 md:left-auto md:right-5 z-[200] transform transition-all duration-300 translate-y-20 opacity-0 bg-gray-800 text-white px-4 py-3 md:px-6 md:py-3 rounded-lg shadow-lg flex items-center gap-3 text-sm md:text-base">
+        <span id="toast-icon"></span>
+        <span id="toast-msg" class="flex-1"></span>
+    </div>
+
+    <!-- MAIN APP SCRIPT -->
+    <script type="module">
+        // ==========================================
+        // 1. KONFIGURASI APLIKASI
+        // ==========================================
+        const IS_PREVIEW = false; // Ubah menjadi false SAAT DEPLOY agar terhubung ke Firebase
+
+        // PASTE FIREBASE CONFIG ANDA DI SINI
+        const firebaseConfig = {
+  apiKey: "AIzaSyB-1kZ-JI_fYcYyCTeGRfJ_4svLa_aZ0aI",
+  authDomain: "absen-kuliah.firebaseapp.com",
+  projectId: "absen-kuliah",
+  storageBucket: "absen-kuliah.firebasestorage.app",
+  messagingSenderId: "914626085119",
+  appId: "1:914626085119:web:9f7bada832328269ed4cca"
+        };
+
+        // ==========================================
+        // 2. FIREBASE IMPORTS & SETUP
+        // ==========================================
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, signOut as fbSignOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, getDocs, updateDoc, doc, query, where, getDoc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        let app, db, auth;
+        if (!IS_PREVIEW) {
+            app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            auth = getAuth(app);
+        } else {
+            document.getElementById('preview-badge').classList.remove('hidden');
+            document.getElementById('app-wrapper').classList.add('pt-6');
+            document.getElementById('demo-login-info').classList.remove('hidden');
+        }
+
+        // ==========================================
+        // 3. MOCK DATA (Hanya untuk Preview)
+        // ==========================================
+        let mockData = {
+            settings: { 
+                appTitle: "HadirKuliah", univ: "Universitas Indonesia", semester: "Ganjil 2026", 
+                matkul: "Kecerdasan Buatan", dosen: "Dr. Asep Sunarya", koor: "Dimas", wa: "62812345678",
+                sesi: [
+                    { nama: "Pertemuan 1", tanggal: "2026-11-14", jam: "08:00", tipe: "Online" },
+                    { nama: "Pertemuan 2", tanggal: "2026-11-21", jam: "08:00", tipe: "Offline" }
+                ] 
+            },
+            mahasiswa: [{ id: "m1", nama: "Budi", kota: "Jakarta", profesi: "Karyawan", password: "123", status: "approved" }],
+            kehadiran: [{ id: "h1", idMhs: "m1", namaMhs: "Budi", pertemuan: "Pertemuan 1", bukti: "", status: "pending", waktu: new Date().toISOString() }]
+        };
+
+        // ==========================================
+        // 4. DATABASE OPERATIONS ABSTRACTION
+        // ==========================================
+        const dbOps = {
+            async getSettings() {
+                if(IS_PREVIEW) return mockData.settings;
+                const snap = await getDoc(doc(db, "settings", "global"));
+                return snap.exists() ? snap.data() : { appTitle: "HadirKuliah", univ: "-", semester: "-", matkul: "-", dosen: "-", koor: "-", wa: "-", sesi: [] };
+            },
+            async saveSettings(data) {
+                if(IS_PREVIEW) { mockData.settings = data; return; }
+                await setDoc(doc(db, "settings", "global"), data);
+            },
+            async getMahasiswa() {
+                if (IS_PREVIEW) return [...mockData.mahasiswa];
+                const qs = await getDocs(collection(db, "mahasiswa"));
+                return qs.docs.map(d => ({ id: d.id, ...d.data() }));
+            },
+            async addMahasiswa(data) {
+                if (IS_PREVIEW) {
+                    const newMhs = { id: 'm' + Date.now(), ...data };
+                    mockData.mahasiswa.push(newMhs);
+                    return newMhs;
+                }
+                const docRef = await addDoc(collection(db, "mahasiswa"), data);
+                return { id: docRef.id, ...data };
+            },
+            async updateMahasiswa(id, data) {
+                if (IS_PREVIEW) {
+                    const idx = mockData.mahasiswa.findIndex(m => m.id === id);
+                    if(idx > -1) mockData.mahasiswa[idx] = { ...mockData.mahasiswa[idx], ...data };
+                    return;
+                }
+                await updateDoc(doc(db, "mahasiswa", id), data);
+            },
+            async deleteMahasiswa(id) {
+                if (IS_PREVIEW) {
+                    mockData.mahasiswa = mockData.mahasiswa.filter(m => m.id !== id);
+                    return;
+                }
+                await deleteDoc(doc(db, "mahasiswa", id));
+            },
+            async loginMahasiswa(nama, password) {
+                if (IS_PREVIEW) {
+                    const user = mockData.mahasiswa.find(m => m.nama.toLowerCase() === nama.toLowerCase() && m.password === password);
+                    if (!user) throw new Error("Nama atau password salah");
+                    if (user.status === 'pending') throw new Error("Akun Anda sedang menunggu persetujuan Admin.");
+                    return user;
+                }
+                const q = query(collection(db, "mahasiswa"), where("nama", "==", nama), where("password", "==", password));
+                const qs = await getDocs(q);
+                if (qs.empty) throw new Error("Nama atau password salah");
+                const userData = { id: qs.docs[0].id, ...qs.docs[0].data() };
+                if (userData.status === 'pending') throw new Error("Akun Anda sedang menunggu persetujuan Admin.");
+                return userData;
+            },
+            async loginAdmin(email, password) {
+                if (IS_PREVIEW) {
+                    if (email === 'admin@kuliah.com' && password === 'admin123') return { uid: 'admin1', email };
+                    throw new Error("Kredensial admin salah");
+                }
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                return userCredential.user;
+            },
+            async getKehadiran() {
+                if (IS_PREVIEW) return [...mockData.kehadiran];
+                const qs = await getDocs(collection(db, "kehadiran"));
+                const data = qs.docs.map(d => ({ id: d.id, ...d.data() }));
+                return data.sort((a,b) => new Date(b.waktu) - new Date(a.waktu));
+            },
+            async getKehadiranMhs(idMhs) {
+                if (IS_PREVIEW) return mockData.kehadiran.filter(k => k.idMhs === idMhs);
+                const q = query(collection(db, "kehadiran"), where("idMhs", "==", idMhs));
+                const qs = await getDocs(q);
+                return qs.docs.map(d => ({ id: d.id, ...d.data() }));
+            },
+            async addKehadiran(data) {
+                if (IS_PREVIEW) {
+                    const newH = { id: 'h' + Date.now(), ...data };
+                    mockData.kehadiran.push(newH);
+                    return;
+                }
+                await addDoc(collection(db, "kehadiran"), data);
+            },
+            async updateStatusKehadiran(id, status) {
+                if (IS_PREVIEW) {
+                    const idx = mockData.kehadiran.findIndex(k => k.id === id);
+                    if (idx > -1) mockData.kehadiran[idx].status = status;
+                    return;
+                }
+                await updateDoc(doc(db, "kehadiran", id), { status });
+            }
+        };
+
+        // ==========================================
+        // 5. GLOBAL STATE & UI HELPERS
+        // ==========================================
+        let currentUser = null; // Data mahasiswa yang login
+        let isAdminMode = false;
+        
+        const toast = document.getElementById('toast');
+        window.showToast = function(msg, type = 'success') {
+            document.getElementById('toast-msg').innerText = msg;
+            document.getElementById('toast-icon').innerHTML = type === 'success' ? '<i class="fas fa-check-circle text-green-400"></i>' : '<i class="fas fa-exclamation-triangle text-red-400"></i>';
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => { toast.classList.add('translate-y-20', 'opacity-0'); }, 3000);
+        }
+
+        const pages = ['dashboard', 'auth', 'mahasiswa', 'admin'];
+        let currentSesiList = []; // State array untuk sesi pertemuan
+        
+        window.showPage = function(pageId, title) {
+            pages.forEach(p => document.getElementById(`page-${p}`).classList.add('hidden'));
+            document.getElementById(`page-${pageId}`).classList.remove('hidden');
+            document.getElementById('page-title').innerText = title;
+            updateNavigationUI(pageId);
+            
+            if(pageId === 'dashboard') loadDashboard();
+            if(pageId === 'admin' && isAdminMode) loadAdminData();
+            if(pageId === 'mahasiswa' && currentUser) loadMhsData();
+        }
+
+        function populateSesiDropdowns(sesiData) {
+            // Konversi ke array jika format lama masih string, atau gunakan array yang baru
+            let sesiArr = [];
+            if (Array.isArray(sesiData)) {
+                sesiArr = sesiData;
+            } else if (typeof sesiData === 'string') {
+                sesiArr = sesiData.split(',').map(s => ({ nama: s.trim(), tanggal: "-", jam: "-", tipe: "-" })).filter(s => s.nama);
+            }
+            
+            // Populasikan ke dropdown Absen Mahasiswa dengan format lengkap
+            const mhsDropdown = document.getElementById('absen-pertemuan');
+            if(mhsDropdown) {
+                mhsDropdown.innerHTML = '<option value="">-- Pilih Pertemuan --</option>' + 
+                    sesiArr.map(s => {
+                        const label = s.tanggal !== "-" ? `${s.nama} (${s.tanggal} ${s.jam} - ${s.tipe})` : s.nama;
+                        return `<option value="${escapeHTML(s.nama)}">${escapeHTML(label)}</option>`;
+                    }).join('');
+            }
+            
+            // Populasikan ke dropdown Unduh Rekap Admin (cukup nama saja)
+            const dlDropdown = document.getElementById('download-sesi');
+            if(dlDropdown) {
+                dlDropdown.innerHTML = '<option value="all">Semua Pertemuan (Keseluruhan)</option>' + 
+                    sesiArr.map(s => `<option value="${escapeHTML(s.nama)}">${escapeHTML(s.nama)}</option>`).join('');
+            }
+        }
+
+        // ==========================================
+        // 6. GLOBAL WINDOW FUNCTIONS FOR MODALS / ACTIONS
+        // ==========================================
+        window.openImageModal = function(base64Src) {
+            document.getElementById('image-modal').classList.remove('hidden');
+            document.getElementById('modal-img').src = base64Src || 'https://via.placeholder.com/600x400?text=Tidak+Ada+Gambar';
+        };
+        window.closeImageModal = function() {
+            document.getElementById('image-modal').classList.add('hidden');
+            document.getElementById('modal-img').src = '';
+        };
+
+        const escapeHTML = str => (str||'').toString().replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, "\\'");
+
+        window.openEditMhsModal = function(id, nama, kota, profesi, pass) {
+            document.getElementById('edit-mhs-id').value = id;
+            document.getElementById('edit-mhs-nama').value = nama;
+            document.getElementById('edit-mhs-kota').value = kota;
+            document.getElementById('edit-mhs-profesi').value = profesi;
+            document.getElementById('edit-mhs-pass').value = pass;
+            document.getElementById('edit-mhs-modal').classList.remove('hidden');
+        };
+        window.closeEditMhsModal = function() {
+            document.getElementById('edit-mhs-modal').classList.add('hidden');
+        };
+
+        // --- Fungsi Manajemen Sesi Pertemuan ---
+        window.renderSesiList = function() {
+            const tbody = document.getElementById('sesi-list-tbody');
+            if (!tbody) return;
+            if (currentSesiList.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-gray-400">Belum ada sesi dijadwalkan.</td></tr>';
+                return;
+            }
+            tbody.innerHTML = currentSesiList.map((s, idx) => `
+                <tr class="border-b hover:bg-gray-50">
+                    <td class="p-2 font-medium">${escapeHTML(s.nama)}</td>
+                    <td class="p-2 text-xs">${escapeHTML(s.tanggal)} ${escapeHTML(s.jam)}</td>
+                    <td class="p-2 text-xs"><span class="px-2 py-1 rounded bg-gray-100">${escapeHTML(s.tipe)}</span></td>
+                    <td class="p-2 text-center">
+                        <button type="button" onclick="removeSesiItem(${idx})" class="text-red-500 hover:text-red-700 text-xs px-2 py-1"><i class="fas fa-times"></i> Hapus</button>
+                    </td>
+                </tr>
+            `).join('');
+        };
+
+        window.addSesiItem = function() {
+            const nama = document.getElementById('add-sesi-nama').value.trim();
+            const tgl = document.getElementById('add-sesi-tgl').value;
+            const jam = document.getElementById('add-sesi-jam').value || "-";
+            const tipe = document.getElementById('add-sesi-tipe').value;
+            
+            if(!nama || !tgl) {
+                showToast("Nama Sesi dan Tanggal wajib diisi!", "error");
+                return;
+            }
+            
+            currentSesiList.push({ nama, tanggal: tgl, jam, tipe });
+            renderSesiList();
+            
+            document.getElementById('add-sesi-nama').value = '';
+            document.getElementById('add-sesi-tgl').value = '';
+            document.getElementById('add-sesi-jam').value = '';
+        };
+
+        window.removeSesiItem = function(idx) {
+            currentSesiList.splice(idx, 1);
+            renderSesiList();
+        };
+        // ---------------------------------------
+
+        window.refreshMahasiswaTable = async function() {
+            try {
+                const mhsList = await dbOps.getMahasiswa();
+                const mtbody = document.getElementById('admin-mhs-tbody');
+                if(!mtbody) return;
+                if(mhsList.length === 0) {
+                    mtbody.innerHTML = `<tr><td colspan="5" class="px-4 py-4 text-center text-gray-400">Belum ada mahasiswa.</td></tr>`;
+                } else {
+                    mtbody.innerHTML = mhsList.map(m => {
+                        const sN = escapeHTML(m.nama), sK = escapeHTML(m.kota), sPr = escapeHTML(m.profesi), sPa = escapeHTML(m.password);
+                        const isPending = m.status === 'pending';
+                        
+                        const statusBadge = isPending 
+                            ? `<span class="bg-yellow-100 text-yellow-700 px-2 py-1 rounded text-xs font-bold whitespace-nowrap">Menunggu</span>`
+                            : `<span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-bold whitespace-nowrap">Aktif</span>`;
+
+                        return `
+                        <tr class="border-b hover:bg-gray-50">
+                            <td class="px-4 py-3 font-medium">${sN}</td>
+                            <td class="px-4 py-3">${sK}</td>
+                            <td class="px-4 py-3 text-gray-500">${sPr}</td>
+                            <td class="px-4 py-3">${statusBadge}</td>
+                            <td class="px-4 py-3 text-center space-x-1">
+                                ${isPending ? `<button onclick="handleApproveMhs('${m.id}')" class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded shadow-sm text-xs transition-colors mb-1 whitespace-nowrap"><i class="fas fa-check"></i> Setujui</button>` : ''}
+                                <button onclick="openEditMhsModal('${m.id}', '${sN}', '${sK}', '${sPr}', '${sPa}')" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded shadow-sm text-xs transition-colors mb-1"><i class="fas fa-edit"></i></button>
+                                <button onclick="handleDeleteMhs('${m.id}')" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded shadow-sm text-xs transition-colors mb-1"><i class="fas fa-trash"></i></button>
+                            </td>
+                        </tr>`;
+                    }).join('');
+                }
+            } catch(e) { console.error("Gagal memuat tabel mhs: ", e); }
+        };
+
+        window.handleApproveMhs = async function(id) {
+            try {
+                await dbOps.updateMahasiswa(id, { status: 'approved' });
+                showToast("Akun mahasiswa berhasil disetujui!", "success");
+                await refreshMahasiswaTable();
+                loadDashboard(); // Update active student count
+            } catch(err) {
+                console.error(err);
+                showToast("Gagal menyetujui akun.", "error");
+            }
+        };
+
+        document.getElementById('form-edit-mhs').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btn-submit-edit');
+            btn.disabled = true; btn.innerText = "Menyimpan...";
+            
+            const id = document.getElementById('edit-mhs-id').value;
+            const data = {
+                nama: document.getElementById('edit-mhs-nama').value,
+                kota: document.getElementById('edit-mhs-kota').value,
+                profesi: document.getElementById('edit-mhs-profesi').value,
+                password: document.getElementById('edit-mhs-pass').value
+            };
+            try {
+                await dbOps.updateMahasiswa(id, data);
+                showToast("Data mahasiswa berhasil diperbarui!", "success");
+                closeEditMhsModal();
+                await refreshMahasiswaTable();
+            } catch(err) {
+                console.error(err);
+                showToast("Gagal mengedit data.", "error");
+            }
+            btn.disabled = false; btn.innerText = "Simpan";
+        });
+
+        window.handleDeleteMhs = async function(id) {
+            if(!confirm("Yakin ingin menghapus mahasiswa ini?")) return;
+            try {
+                await dbOps.deleteMahasiswa(id);
+                showToast("Akun mahasiswa berhasil dihapus!", "success");
+                await refreshMahasiswaTable();
+                loadDashboard();
+            } catch(err) {
+                console.error(err);
+                showToast("Gagal menghapus data.", "error");
+            }
+        };
+
+        window.handleApproval = async function(id, status) {
+            try {
+                await dbOps.updateStatusKehadiran(id, status);
+                showToast(`Kehadiran di-${status === 'approved' ? 'Setujui' : 'Tolak'}`, "success");
+                loadAdminData(); // Refresh antrean
+                loadDashboard(); // Refresh stats
+            } catch(e) {
+                showToast("Gagal memproses", "error");
+                console.error(e);
+            }
+        };
+
+        window.downloadRekapExcel = async function() {
+            try {
+                showToast("Menyiapkan file Excel...", "success");
+                const [hadir, mhs] = await Promise.all([dbOps.getKehadiran(), dbOps.getMahasiswa()]);
+                const selectedSesi = document.getElementById('download-sesi').value;
+                
+                let filtered = hadir;
+                if(selectedSesi !== 'all') {
+                    filtered = hadir.filter(h => h.pertemuan === selectedSesi);
+                }
+                
+                // Mapped mahasiswa data by ID for quick lookup
+                const mhsMap = {};
+                mhs.forEach(m => mhsMap[m.id] = m);
+
+                // Build Data Structure for SheetJS
+                const exportData = filtered.map(h => {
+                    const mData = mhsMap[h.idMhs] || { kota: "-", profesi: "-" };
+                    return {
+                        "Waktu Absen": new Date(h.waktu).toLocaleString('id-ID'),
+                        "Nama Mahasiswa": h.namaMhs,
+                        "Asal Kota": mData.kota,
+                        "Profesi": mData.profesi,
+                        "Sesi Pertemuan": h.pertemuan,
+                        "Status": h.status === 'approved' ? 'Hadir (Disetujui)' : (h.status === 'rejected' ? 'Ditolak' : 'Menunggu Persetujuan')
+                    };
+                });
+
+                if (exportData.length === 0) {
+                    showToast("Tidak ada data untuk diunduh.", "error");
+                    return;
+                }
+
+                // Generate Excel Worksheet
+                const worksheet = XLSX.utils.json_to_sheet(exportData);
+                const workbook = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(workbook, worksheet, "Rekap Kehadiran");
+
+                // Trigger Download File
+                const fileName = `Rekap_Kehadiran_${selectedSesi === 'all' ? 'Keseluruhan' : selectedSesi}.xlsx`;
+                XLSX.writeFile(workbook, fileName);
+                
+                showToast("File Excel Berhasil Diunduh!", "success");
+            } catch(e) {
+                console.error(e);
+                showToast("Terjadi kesalahan saat mengunduh data", "error");
+            }
+        };
+
+        // ==========================================
+        // 7. NAVIGATION LOGIC
+        // ==========================================
+        function updateNavigationUI(activePageId) {
+            const navItems = [
+                { id: 'dashboard', icon: 'fa-chart-pie', label: 'Dashboard' },
+                ...(currentUser ? [{ id: 'mahasiswa', icon: 'fa-user-graduate', label: 'Area Mahasiswa' }] : []),
+                ...(isAdminMode ? [{ id: 'admin', icon: 'fa-shield-alt', label: 'Area Admin' }] : [])
+            ];
+
+            const renderNav = (items, isMobile) => items.map(item => `
+                <a href="javascript:void(0)" onclick="showPage('${item.id}', '${item.label}')" 
+                   class="${isMobile ? 'flex flex-col items-center justify-center w-16 h-16 text-gray-500' : 'flex items-center gap-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-corporate-50 hover:text-corporate-600 transition-colors'} 
+                          ${activePageId === item.id ? (isMobile ? 'mobile-nav-active' : 'bg-corporate-50 text-corporate-600 font-semibold') : ''}">
+                    <i class="fas ${item.icon} ${isMobile ? 'text-xl mb-1' : ''}"></i>
+                    <span class="${isMobile ? 'text-[10px]' : ''}">${item.label}</span>
+                </a>
+            `).join('');
+
+            document.getElementById('desktop-nav').innerHTML = renderNav(navItems, false);
+            document.getElementById('mobile-nav').innerHTML = renderNav(navItems, true);
+
+            // Header Actions (Top Right)
+            const hActions = document.getElementById('header-actions');
+            if (currentUser || isAdminMode) {
+                hActions.innerHTML = `<button onclick="logout()" class="bg-red-50 text-red-600 hover:bg-red-100 px-4 py-2 rounded-lg text-sm font-semibold transition-colors">Keluar</button>`;
+                document.getElementById('desktop-user-info').innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-corporate-100 flex items-center justify-center text-corporate-600 font-bold">${(currentUser?.nama || 'A')[0]}</div>
+                        <div class="overflow-hidden">
+                            <p class="text-sm font-bold text-gray-800 truncate">${currentUser ? currentUser.nama : 'Administrator'}</p>
+                            <p class="text-xs text-gray-500">${currentUser ? 'Mahasiswa' : 'Koordinator'}</p>
+                        </div>
+                    </div>`;
+            } else {
+                hActions.innerHTML = `
+                    <button onclick="switchAuth('mhs')" class="bg-corporate-50 text-corporate-600 hover:bg-corporate-100 px-3 py-2 rounded-lg text-sm font-semibold transition-colors border border-corporate-200">Login Mhs</button>
+                    <button onclick="switchAuth('reg')" class="bg-corporate-600 text-white hover:bg-corporate-700 px-3 py-2 rounded-lg text-sm font-semibold shadow transition-colors">Daftar</button>
+                    <button onclick="switchAuth('admin')" class="bg-gray-800 text-white hover:bg-black px-3 py-2 rounded-lg text-sm font-semibold shadow transition-colors">Admin</button>
+                `;
+                document.getElementById('desktop-user-info').innerHTML = `<p class="text-xs text-gray-400 text-center">Silakan login untuk akses fitur.</p>`;
+            }
+        }
+
+        window.logout = function() {
+            currentUser = null;
+            isAdminMode = false;
+            if(!IS_PREVIEW && auth) fbSignOut(auth);
+            showPage('dashboard', 'Dashboard');
+            showToast("Berhasil keluar", "success");
+        };
+
+        window.switchAuth = function(type) {
+            document.getElementById('form-login-mhs').classList.add('hidden');
+            document.getElementById('form-login-admin').classList.add('hidden');
+            document.getElementById('form-register').classList.add('hidden');
+            
+            showPage('auth', type === 'reg' ? 'Daftar Akun' : 'Login');
+            
+            if (type === 'mhs') {
+                document.getElementById('form-login-mhs').classList.remove('hidden');
+                document.getElementById('auth-title').innerText = 'Login Mahasiswa';
+                document.getElementById('auth-subtitle').innerText = 'Masukkan nama dan password yang didaftarkan.';
+            } else if (type === 'admin') {
+                document.getElementById('form-login-admin').classList.remove('hidden');
+                document.getElementById('auth-title').innerText = 'Login Admin';
+                document.getElementById('auth-subtitle').innerText = 'Akses khusus Koordinator/Dosen.';
+            } else {
+                document.getElementById('form-register').classList.remove('hidden');
+                document.getElementById('auth-title').innerText = 'Daftar Akun';
+                document.getElementById('auth-subtitle').innerText = 'Lengkapi data diri Anda.';
+            }
+        };
+
+        // ==========================================
+        // 8. DATA RENDERING & BUSINESS LOGIC
+        // ==========================================
+        async function loadDashboard() {
+            try {
+                const [mhs, hadir, settings] = await Promise.all([
+                    dbOps.getMahasiswa(),
+                    dbOps.getKehadiran(),
+                    dbOps.getSettings()
+                ]);
+                
+                // Hanya hitung mahasiswa yang statusnya sudah disetujui
+                const activeMhs = mhs.filter(m => m.status === 'approved');
+                const totalMhs = activeMhs.length;
+                document.getElementById('stat-total').innerText = totalMhs;
+
+                // Tampilkan Settings Banner
+                if(settings) {
+                    document.getElementById('app-logo-title').innerText = escapeHTML(settings.appTitle || "HadirKuliah");
+                    const mobileAppTitle = document.getElementById('mobile-app-title');
+                    if(mobileAppTitle) mobileAppTitle.innerText = escapeHTML(settings.appTitle || "HadirKuliah");
+                    document.title = escapeHTML(settings.appTitle || "Aplikasi Hadir Kuliah");
+                    
+                    populateSesiDropdowns(settings.sesi); // Jalankan populator dropdown sesi
+
+                    if(settings.matkul && settings.matkul !== "-") {
+                        document.getElementById('dash-settings-banner').classList.remove('hidden');
+                        document.getElementById('dash-matkul').innerText = escapeHTML(settings.matkul);
+                        document.getElementById('dash-dosen').innerText = escapeHTML(settings.dosen);
+                        document.getElementById('dash-koor').innerText = escapeHTML(settings.koor);
+                        document.getElementById('dash-univ').innerText = escapeHTML(settings.univ || "Universitas");
+                        document.getElementById('dash-semester').innerText = escapeHTML(settings.semester || "Semester");
+                        const waClean = (settings.wa || "").replace(/\D/g,'');
+                        document.getElementById('dash-wa-link').href = `https://wa.me/${waClean}`;
+                    }
+                }
+
+                // Hitung Statistik Pertemuan
+                const pertemuanMap = {};
+                hadir.forEach(h => {
+                    if (h.status !== 'approved') return; // Hanya hitung yang disetujui
+                    
+                    if (!pertemuanMap[h.pertemuan]) {
+                        pertemuanMap[h.pertemuan] = { count: 0, date: h.waktu };
+                    }
+                    pertemuanMap[h.pertemuan].count++;
+                    
+                    if (new Date(h.waktu) > new Date(pertemuanMap[h.pertemuan].date)) {
+                        pertemuanMap[h.pertemuan].date = h.waktu;
+                    }
+                });
+
+                const totalPertemuan = Object.keys(pertemuanMap).length;
+                document.getElementById('stat-pertemuan').innerText = totalPertemuan;
+
+                // Cari pertemuan terakhir untuk progres bar
+                let latestPertemuan = null;
+                let latestDate = 0;
+                for (let p in pertemuanMap) {
+                    let d = new Date(pertemuanMap[p].date).getTime();
+                    if (d > latestDate) {
+                        latestDate = d;
+                        latestPertemuan = p;
+                    }
+                }
+
+                let sudahHadir = 0;
+                if (latestPertemuan) {
+                    sudahHadir = pertemuanMap[latestPertemuan].count;
+                }
+                let belumHadir = totalMhs > 0 ? totalMhs - sudahHadir : 0;
+
+                document.getElementById('stat-hadir').innerText = sudahHadir;
+                document.getElementById('stat-belum').innerText = belumHadir;
+
+                // Render Progress Bar
+                let progress = totalMhs > 0 ? Math.round((sudahHadir / totalMhs) * 100) : 0;
+                document.getElementById('stat-progress-percent').innerText = `${progress}%`;
+                document.getElementById('stat-progress-text').innerText = `${sudahHadir} dari ${totalMhs} mahasiswa aktif hadir`;
+                document.getElementById('stat-progress-bar').style.width = `${progress}%`;
+
+                // Render List Aktivitas Terakhir
+                const recDiv = document.getElementById('recent-activity');
+                
+                const actList = Object.keys(pertemuanMap).map(p => ({
+                    name: p,
+                    date: pertemuanMap[p].date,
+                    hadir: pertemuanMap[p].count,
+                    belum: totalMhs - pertemuanMap[p].count
+                })).sort((a,b) => new Date(b.date) - new Date(a.date));
+
+                if (actList.length === 0) {
+                    recDiv.innerHTML = '<p class="text-sm text-gray-500 italic">Belum ada aktivitas pertemuan yang disetujui.</p>';
+                } else {
+                    recDiv.innerHTML = actList.slice(0, 5).map(a => `
+                        <div class="border border-gray-200 rounded-xl p-4 flex justify-between items-center shadow-sm">
+                            <div>
+                                <p class="font-bold text-gray-800">${escapeHTML(a.name)}</p>
+                                <p class="text-xs text-gray-500 mt-1">${a.hadir} hadir · ${a.belum} belum hadir</p>
+                            </div>
+                            <span class="bg-blue-100 text-blue-800 text-xs font-semibold px-3 py-1 rounded-full">
+                                ${new Date(a.date).toISOString().split('T')[0]}
+                            </span>
+                        </div>
+                    `).join('');
+                }
+            } catch(e) { console.error("Error load dashboard", e); }
+        }
+
+        async function loadAdminData() {
+            try {
+                // 1. Load Settings ke Form
+                const settings = await dbOps.getSettings();
+                document.getElementById('set-apptitle').value = settings.appTitle && settings.appTitle !== "-" ? settings.appTitle : "HadirKuliah";
+                document.getElementById('set-univ').value = settings.univ && settings.univ !== "-" ? settings.univ : "";
+                document.getElementById('set-semester').value = settings.semester && settings.semester !== "-" ? settings.semester : "";
+                document.getElementById('set-matkul').value = settings.matkul && settings.matkul !== "-" ? settings.matkul : "";
+                document.getElementById('set-dosen').value = settings.dosen && settings.dosen !== "-" ? settings.dosen : "";
+                document.getElementById('set-koor').value = settings.koor && settings.koor !== "-" ? settings.koor : "";
+                document.getElementById('set-wa').value = settings.wa && settings.wa !== "-" ? settings.wa : "";
+                
+                // Load Sesi List (Konversi format string lama ke format array baru jika perlu)
+                if (Array.isArray(settings.sesi)) {
+                    currentSesiList = settings.sesi;
+                } else if (typeof settings.sesi === 'string') {
+                    currentSesiList = settings.sesi.split(',').map(s => ({ nama: s.trim(), tanggal: "-", jam: "-", tipe: "-" })).filter(s => s.nama);
+                } else {
+                    currentSesiList = [];
+                }
+                renderSesiList();
+
+                // 2. Load Tabel Pending
+                const hadir = await dbOps.getKehadiran();
+                const pending = hadir.filter(h => h.status === 'pending');
+                const ptbody = document.getElementById('admin-pending-tbody');
+                
+                if (pending.length === 0) {
+                    ptbody.innerHTML = `<tr><td colspan="5" class="px-4 py-4 text-center text-gray-400">Tidak ada antrean validasi.</td></tr>`;
+                } else {
+                    ptbody.innerHTML = pending.map(h => `
+                        <tr class="border-b hover:bg-gray-50">
+                            <td class="px-4 py-3 text-xs text-gray-500">${new Date(h.waktu).toLocaleString('id-ID')}</td>
+                            <td class="px-4 py-3 font-medium">${escapeHTML(h.namaMhs)}</td>
+                            <td class="px-4 py-3">${escapeHTML(h.pertemuan)}</td>
+                            <td class="px-4 py-3 text-center">
+                                <button onclick="openImageModal('${h.bukti}')" class="text-corporate-600 hover:text-corporate-800 text-xs font-bold underline"><i class="fas fa-image"></i> Lihat</button>
+                            </td>
+                            <td class="px-4 py-3 text-center space-x-2">
+                                <button onclick="handleApproval('${h.id}', 'approved')" class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded shadow-sm text-xs transition-colors"><i class="fas fa-check"></i></button>
+                                <button onclick="handleApproval('${h.id}', 'rejected')" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded shadow-sm text-xs transition-colors"><i class="fas fa-times"></i></button>
+                            </td>
+                        </tr>
+                    `).join('');
+                }
+
+                // 3. Load Tabel Mahasiswa
+                await refreshMahasiswaTable();
+
+            } catch(e) { console.error("Error load admin", e); }
+        }
+
+        async function loadMhsData() {
+            if(!currentUser) return;
+            document.getElementById('mhs-welcome-name').innerText = `Halo, ${currentUser.nama}!`;
+            try {
+                const history = await dbOps.getKehadiranMhs(currentUser.id);
+                const hDiv = document.getElementById('mhs-history-list');
+                
+                if(history.length === 0) {
+                    hDiv.innerHTML = '<p class="text-sm text-gray-500 italic">Belum ada riwayat absen.</p>';
+                } else {
+                    // Sort descending
+                    history.sort((a,b) => new Date(b.waktu) - new Date(a.waktu));
+                    hDiv.innerHTML = history.map(h => `
+                        <div class="flex justify-between items-center p-3 border rounded-xl bg-white">
+                            <div>
+                                <p class="font-semibold text-gray-800 text-sm">${escapeHTML(h.pertemuan)}</p>
+                                <p class="text-xs text-gray-400">${new Date(h.waktu).toLocaleString('id-ID')}</p>
+                            </div>
+                            <div>
+                                ${h.status === 'approved' ? '<span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-bold">Disetujui</span>' : 
+                                 (h.status === 'rejected' ? '<span class="bg-red-100 text-red-700 px-2 py-1 rounded text-xs font-bold">Ditolak</span>' : 
+                                 '<span class="bg-yellow-100 text-yellow-700 px-2 py-1 rounded text-xs font-bold">Menunggu</span>')}
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            } catch(e) { console.error("Error load mhs history", e); }
+        }
+
+        // ==========================================
+        // 9. EVENT LISTENERS & COMPRESSION IMAGE
+        // ==========================================
+        
+        // Kompresi Gambar Client-Side
+        const fileInput = document.getElementById('absen-file');
+        const fileLabel = document.getElementById('file-name-label');
+        const b64Input = document.getElementById('absen-base64');
+        
+        fileInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if(!file) return;
+            fileLabel.innerText = file.name + " (Memproses...)";
+            
+            const reader = new FileReader();
+            reader.onload = function(ev) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    const MAX_WIDTH = 800;
+                    const scaleSize = MAX_WIDTH / img.width;
+                    canvas.width = MAX_WIDTH;
+                    canvas.height = img.height * scaleSize;
+                    
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    
+                    const dataUrl = canvas.toDataURL('image/jpeg', 0.6); // Kompresi JPEG 60%
+                    b64Input.value = dataUrl;
+                    fileLabel.innerText = "Gambar siap dikirim! (" + Math.round(dataUrl.length/1024) + " KB)";
+                    fileLabel.classList.add('text-green-600', 'font-bold');
+                }
+                img.src = ev.target.result;
+            }
+            reader.readAsDataURL(file);
+        });
+
+        // Form Submit Handlers
+        document.getElementById('form-register').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('button'); btn.disabled = true; btn.innerText = "Memproses...";
+            try {
+                const data = {
+                    nama: document.getElementById('reg-nama').value,
+                    kota: document.getElementById('reg-kota').value,
+                    profesi: document.getElementById('reg-profesi').value,
+                    password: document.getElementById('reg-pass').value,
+                    status: 'pending' // STATUS MENUNGGU PERSETUJUAN
+                };
+                await dbOps.addMahasiswa(data);
+                showToast("Pendaftaran berhasil! Menunggu persetujuan Admin.", "success");
+                switchAuth('mhs');
+                e.target.reset();
+            } catch(err) {
+                showToast("Gagal mendaftar.", "error");
+            }
+            btn.disabled = false; btn.innerText = "Daftar Akun Baru";
+        });
+
+        document.getElementById('form-login-mhs').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('button'); btn.disabled = true; btn.innerText = "Mencocokkan...";
+            try {
+                const user = await dbOps.loginMahasiswa(
+                    document.getElementById('login-mhs-nama').value,
+                    document.getElementById('login-mhs-pass').value
+                );
+                currentUser = user;
+                isAdminMode = false;
+                showToast(`Selamat datang, ${user.nama}!`, "success");
+                showPage('mahasiswa', 'Area Mahasiswa');
+                e.target.reset();
+            } catch(err) {
+                showToast(err.message, "error");
+            }
+            btn.disabled = false; btn.innerText = "Masuk Area Mahasiswa";
+        });
+
+        document.getElementById('form-login-admin').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('button'); btn.disabled = true; btn.innerText = "Verifikasi...";
+            try {
+                await dbOps.loginAdmin(
+                    document.getElementById('login-admin-email').value,
+                    document.getElementById('login-admin-pass').value
+                );
+                isAdminMode = true;
+                currentUser = null;
+                showToast("Login Admin Berhasil!", "success");
+                showPage('admin', 'Area Admin / Dosen');
+                e.target.reset();
+            } catch(err) {
+                showToast(err.message, "error");
+            }
+            btn.disabled = false; btn.innerText = "Masuk Area Admin";
+        });
+
+        document.getElementById('form-absen').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if(!currentUser) return;
+            const base64 = b64Input.value;
+            if(!base64) {
+                showToast("Harap pilih gambar valid terlebih dahulu", "error");
+                return;
+            }
+            const btn = document.getElementById('btn-submit-absen'); btn.disabled = true; btn.innerText = "Mengirim...";
+            try {
+                await dbOps.addKehadiran({
+                    idMhs: currentUser.id,
+                    namaMhs: currentUser.nama,
+                    pertemuan: document.getElementById('absen-pertemuan').value,
+                    bukti: base64,
+                    status: 'pending',
+                    waktu: new Date().toISOString()
+                });
+                showToast("Kehadiran terkirim! Menunggu validasi.", "success");
+                e.target.reset();
+                b64Input.value = '';
+                fileLabel.innerText = "Klik untuk pilih gambar (JPG/PNG)";
+                fileLabel.classList.remove('text-green-600', 'font-bold');
+                loadMhsData(); // Refresh list
+            } catch(err) {
+                showToast("Gagal mengirim data", "error");
+            }
+            btn.disabled = false; btn.innerText = "Kirim Kehadiran";
+        });
+
+        document.getElementById('form-admin-settings').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btn-save-settings');
+            btn.disabled = true; btn.innerText = "Menyimpan...";
+            try {
+                await dbOps.saveSettings({
+                    appTitle: document.getElementById('set-apptitle').value || "HadirKuliah",
+                    univ: document.getElementById('set-univ').value,
+                    semester: document.getElementById('set-semester').value,
+                    matkul: document.getElementById('set-matkul').value,
+                    dosen: document.getElementById('set-dosen').value,
+                    koor: document.getElementById('set-koor').value,
+                    wa: document.getElementById('set-wa').value,
+                    sesi: currentSesiList // Menggunakan array dari tabel
+                });
+                showToast("Pengaturan berhasil disimpan!", "success");
+                loadDashboard(); // Refresh Dashboard UI & Dropdowns
+            } catch(err) {
+                showToast("Gagal menyimpan pengaturan", "error");
+            }
+            btn.disabled = false; btn.innerText = "Simpan Pengaturan";
+        });
+
+        // Init App
+        window.addEventListener('DOMContentLoaded', () => {
+            showPage('dashboard', 'Dashboard');
+        });
+
+    </script>
+</body>
+</html>
