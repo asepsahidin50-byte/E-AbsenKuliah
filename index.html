@@ -241,6 +241,19 @@
         </div>
     </div>
 
+    <!-- MODAL POP-UP CEKLIS ANIMASI DI TENGAH LAYAR -->
+    <div id="center-check-modal" class="fixed inset-0 z-[178] bg-slate-900/50 backdrop-blur-[2px] hidden flex justify-center items-center p-4 pointer-events-none transition-opacity">
+        <div id="center-check-card" class="glass rounded-3xl shadow-2xl w-full max-w-xs border border-emerald-400/50 p-7 text-center space-y-4 relative animate-pop-spring">
+            <div class="w-20 h-20 rounded-full bg-gradient-to-tr from-emerald-500 to-teal-400 text-white flex items-center justify-center mx-auto text-4xl shadow-lg animate-pulse-ring">
+                <i class="fas fa-check"></i>
+            </div>
+            <div class="space-y-1">
+                <h3 id="center-check-title" class="font-extrabold text-lg tracking-wide text-emerald-600 dark:text-emerald-400 uppercase">BERHASIL</h3>
+                <p id="center-check-subtitle" class="text-xs opacity-80 leading-relaxed">Perubahan berhasil disimpan.</p>
+            </div>
+        </div>
+    </div>
+
     <!-- MODAL WAJIB UBAH NAMA KAPITAL SAAT LOGIN -->
     <div id="force-capital-modal" class="fixed inset-0 z-[180] bg-slate-900/80 backdrop-blur-sm hidden flex justify-center items-center p-4 transition-opacity">
         <div id="force-capital-card" class="glass rounded-3xl shadow-2xl w-full max-w-md overflow-hidden border border-amber-400/40 p-6 md:p-7 space-y-5 relative animate-pop-spring">
@@ -315,7 +328,12 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium mb-1">Password</label>
-                    <input type="text" id="edit-mhs-pass" placeholder="CONTOH: 123456" required class="w-full px-4 py-2 rounded-lg border bg-transparent focus:ring-2 focus:ring-corporate-500 outline-none">
+                    <div class="relative">
+                        <input type="password" id="edit-mhs-pass" placeholder="CONTOH: 123456" required class="w-full px-4 py-2 pr-10 rounded-lg border bg-transparent focus:ring-2 focus:ring-corporate-500 outline-none">
+                        <button type="button" onclick="togglePasswordVisibility('edit-mhs-pass', this)" class="absolute inset-y-0 right-0 px-3 flex items-center opacity-70 hover:opacity-100" title="Lihat/Sembunyikan Password">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
                 </div>
                 <div class="flex justify-end gap-2 mt-4">
                     <button type="button" onclick="closeEditMhsModal()" class="bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white font-semibold py-2 px-4 rounded-lg transition-colors">Batal</button>
@@ -487,7 +505,12 @@
                         </div>
                         <div>
                             <label class="block text-sm font-medium mb-1">Password</label>
-                            <input type="password" id="login-mhs-pass" placeholder="CONTOH: 123456" required class="w-full px-4 py-3 rounded-xl border bg-transparent focus:ring-2 focus:ring-corporate-500 outline-none transition-all">
+                            <div class="relative">
+                                <input type="password" id="login-mhs-pass" placeholder="CONTOH: 123456" required class="w-full px-4 py-3 pr-11 rounded-xl border bg-transparent focus:ring-2 focus:ring-corporate-500 outline-none transition-all">
+                                <button type="button" onclick="togglePasswordVisibility('login-mhs-pass', this)" class="absolute inset-y-0 right-0 px-3.5 flex items-center opacity-70 hover:opacity-100" title="Lihat/Sembunyikan Password">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
                         </div>
                         <button type="submit" class="w-full bg-corporate-600 hover:bg-corporate-700 text-white font-bold py-3 rounded-xl shadow-md transition-all mt-4">Masuk Area Mahasiswa</button>
                     </form>
@@ -500,7 +523,12 @@
                         </div>
                         <div>
                             <label class="block text-sm font-medium mb-1">Password</label>
-                            <input type="password" id="login-admin-pass" placeholder="Masukkan password" required class="w-full px-4 py-3 rounded-xl border bg-transparent focus:ring-2 focus:ring-corporate-500 outline-none transition-all">
+                            <div class="relative">
+                                <input type="password" id="login-admin-pass" placeholder="Masukkan password" required class="w-full px-4 py-3 pr-11 rounded-xl border bg-transparent focus:ring-2 focus:ring-corporate-500 outline-none transition-all">
+                                <button type="button" onclick="togglePasswordVisibility('login-admin-pass', this)" class="absolute inset-y-0 right-0 px-3.5 flex items-center opacity-70 hover:opacity-100" title="Lihat/Sembunyikan Password">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
                         </div>
                         <button type="submit" class="w-full bg-gray-800 hover:bg-black text-white font-bold py-3 rounded-xl shadow-md transition-all mt-4">Masuk Area Admin</button>
                     </form>
@@ -548,7 +576,12 @@
                         </div>
                         <div>
                             <label class="block text-sm font-medium mb-1">Buat Password</label>
-                            <input type="text" id="reg-pass" placeholder="CONTOH: 123456" required class="w-full px-4 py-3 rounded-xl border bg-transparent focus:ring-2 focus:ring-corporate-500 outline-none transition-all">
+                            <div class="relative">
+                                <input type="password" id="reg-pass" placeholder="CONTOH: 123456" required class="w-full px-4 py-3 pr-11 rounded-xl border bg-transparent focus:ring-2 focus:ring-corporate-500 outline-none transition-all">
+                                <button type="button" onclick="togglePasswordVisibility('reg-pass', this)" class="absolute inset-y-0 right-0 px-3.5 flex items-center opacity-70 hover:opacity-100" title="Lihat/Sembunyikan Password">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
                         </div>
                         <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-xl shadow-md transition-all mt-4">Daftar Akun Baru</button>
                     </form>
@@ -581,7 +614,12 @@
                         </div>
                         <div>
                             <label class="block text-sm font-medium mb-1">Password Baru</label>
-                            <input type="text" id="mhs-edit-pass" placeholder="CONTOH: 123456" required class="w-full px-4 py-2.5 rounded-xl border bg-transparent focus:ring-2 focus:ring-corporate-500 outline-none">
+                            <div class="relative">
+                                <input type="password" id="mhs-edit-pass" placeholder="CONTOH: 123456" required class="w-full px-4 py-2.5 pr-11 rounded-xl border bg-transparent focus:ring-2 focus:ring-corporate-500 outline-none">
+                                <button type="button" onclick="togglePasswordVisibility('mhs-edit-pass', this)" class="absolute inset-y-0 right-0 px-3.5 flex items-center opacity-70 hover:opacity-100" title="Lihat/Sembunyikan Password">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
                         </div>
                         <div class="md:col-span-2 flex justify-end gap-2 mt-1">
                             <button type="button" onclick="toggleMhsProfileCard()" class="bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white text-xs md:text-sm font-semibold py-2 px-4 rounded-xl transition-colors">Batal</button>
@@ -1063,6 +1101,50 @@
             document.getElementById('image-modal').classList.add('hidden');
         };
 
+        window.togglePasswordVisibility = function(inputId, btnEl) {
+            const input = document.getElementById(inputId);
+            if (!input) return;
+            const icon = btnEl?.querySelector('i');
+            if (input.type === 'password') {
+                input.type = 'text';
+                if (icon) {
+                    icon.classList.remove('fa-eye');
+                    icon.classList.add('fa-eye-slash');
+                }
+            } else {
+                input.type = 'password';
+                if (icon) {
+                    icon.classList.remove('fa-eye-slash');
+                    icon.classList.add('fa-eye');
+                }
+            }
+        };
+
+        let centerCheckTimer = null;
+        window.showCenterCheckPopup = function(title = 'BERHASIL', subtitle = 'Perubahan berhasil disimpan.') {
+            const modal = document.getElementById('center-check-modal');
+            const card = document.getElementById('center-check-card');
+            const titleEl = document.getElementById('center-check-title');
+            const subEl = document.getElementById('center-check-subtitle');
+            if (!modal) return;
+
+            if (centerCheckTimer) clearTimeout(centerCheckTimer);
+            if (titleEl) titleEl.innerText = title;
+            if (subEl) subEl.innerText = subtitle;
+
+            if (card) {
+                card.classList.remove('animate-pop-spring');
+                void card.offsetWidth;
+                card.classList.add('animate-pop-spring');
+            }
+            modal.classList.remove('hidden');
+
+            centerCheckTimer = setTimeout(() => {
+                modal.classList.add('hidden');
+                centerCheckTimer = null;
+            }, 1400);
+        };
+
         let actionCountdownTimer = null;
         window.showActionCountdownModal = function(title, subtitle, iconClass = 'fas fa-check-circle') {
             return new Promise((resolve) => {
@@ -1313,10 +1395,8 @@
         };
 
         window.refreshDashboardPage = async function() {
-            showRefreshCountdownModal(async () => {
-                await loadDashboard();
-                showToast("Halaman Dashboard berhasil diperbarui!", "success");
-            });
+            await loadDashboard();
+            showCenterCheckPopup("DATA DIPERBARUI", "Halaman Dashboard telah disegarkan.");
         };
 
         window.toggleApprovedListDropdown = function() {
@@ -1552,7 +1632,7 @@
                 });
 
                 e.target.reset();
-                await showActionCountdownModal("PENDAFTARAN BERHASIL", "Akun Anda tercatat. Menunggu persetujuan Admin.", "fas fa-user-plus");
+                showCenterCheckPopup("PENDAFTARAN BERHASIL", "Akun Anda tercatat. Menunggu persetujuan Admin.");
                 showPage('auth', 'Login Mahasiswa', 'login-mhs');
             } catch (err) {
                 showToast("Gagal mendaftar akun baru.", "error");
@@ -1568,7 +1648,9 @@
             card.classList.toggle('hidden');
             if (!card.classList.contains('hidden') && currentUser) {
                 document.getElementById('mhs-edit-nama').value = currentUser.nama || '';
-                document.getElementById('mhs-edit-pass').value = currentUser.password || '';
+                const passInput = document.getElementById('mhs-edit-pass');
+                passInput.value = currentUser.password || '';
+                passInput.type = 'password';
             }
         };
 
@@ -1603,7 +1685,7 @@
                 document.getElementById('mhs-welcome-name').innerText = `Halo, ${currentUser.nama}!`;
                 updateNavigationUI('mahasiswa');
                 toggleMhsProfileCard();
-                showActionCountdownModal("PROFIL DIPERBARUI", "Nama lengkap dan password baru Anda telah disimpan.", "fas fa-user-edit");
+                showCenterCheckPopup("PROFIL DIPERBARUI", "Nama lengkap dan password baru telah disimpan.");
             } catch (err) {
                 showToast("Gagal memperbarui profil. Pastikan izin akses database aktif.", "error");
             }
@@ -1763,11 +1845,9 @@
         window.refreshAdminPanel = async function() {
             const icon = document.getElementById('icon-refresh-admin');
             if (icon) icon.classList.add('fa-spin');
-            showRefreshCountdownModal(async () => {
-                await loadAdminData();
-                if (icon) icon.classList.remove('fa-spin');
-                showToast("Data Admin berhasil diperbarui!", "success");
-            });
+            await loadAdminData();
+            if (icon) icon.classList.remove('fa-spin');
+            showCenterCheckPopup("DATA DIPERBARUI", "Panel Admin berhasil disinkronkan.");
         };
 
         async function loadAdminData() {
@@ -1965,7 +2045,7 @@
 
             try {
                 await dbOps.saveSettings(payload);
-                showActionCountdownModal("PENGATURAN DISIMPAN", "Data mata kuliah & sesi pertemuan berhasil diperbarui.", "fas fa-cog");
+                showCenterCheckPopup("PENGATURAN DISIMPAN", "Data mata kuliah & sesi berhasil diperbarui.");
                 loadAdminData();
             } catch (err) {
                 showToast("Gagal menyimpan pengaturan.", "error");
@@ -1994,7 +2074,7 @@
             if (ids.length === 0) return;
             try {
                 await Promise.all(ids.map(id => dbOps.updateStatusKehadiran(id, 'approved')));
-                showActionCountdownModal("KEHADIRAN DISETUJUI", `${ids.length} data kehadiran berhasil di-ACC sekaligus.`, "fas fa-check-double");
+                showCenterCheckPopup("KEHADIRAN DISETUJUI", `${ids.length} data kehadiran berhasil di-ACC.`);
                 loadAdminData();
             } catch (e) {
                 showToast("Gagal memproses persetujuan massal.", "error");
@@ -2004,10 +2084,9 @@
         window.verifikasiHadir = async function(id, status) {
             try {
                 await dbOps.updateStatusKehadiran(id, status);
-                showActionCountdownModal(
+                showCenterCheckPopup(
                     status === 'approved' ? "KEHADIRAN DI-ACC" : "KEHADIRAN DITOLAK",
-                    status === 'approved' ? "Status kehadiran mahasiswa telah disetujui." : "Status kehadiran mahasiswa telah ditolak.",
-                    status === 'approved' ? "fas fa-check-circle" : "fas fa-times-circle"
+                    status === 'approved' ? "Status kehadiran mahasiswa telah disetujui." : "Status kehadiran mahasiswa telah ditolak."
                 );
                 loadAdminData();
             } catch (e) {
@@ -2020,7 +2099,7 @@
             if (!ok) return;
             try {
                 await dbOps.deleteKehadiran(id);
-                showActionCountdownModal("DATA DIHAPUS", "Catatan kehadiran berhasil dihapus dari sistem.", "fas fa-trash-alt");
+                showCenterCheckPopup("DATA DIHAPUS", "Catatan kehadiran berhasil dihapus.");
                 loadAdminData();
             } catch (e) {
                 showToast("Gagal menghapus data kehadiran.", "error");
@@ -2049,7 +2128,7 @@
             if (ids.length === 0) return;
             try {
                 await Promise.all(ids.map(id => dbOps.updateMahasiswa(id, { status: 'approved' })));
-                showActionCountdownModal("AKUN DIAKTIFKAN", `${ids.length} akun mahasiswa berhasil disetujui sekaligus.`, "fas fa-users-cog");
+                showCenterCheckPopup("AKUN DIAKTIFKAN", `${ids.length} akun mahasiswa berhasil disetujui.`);
                 loadAdminData();
             } catch (e) {
                 showToast("Gagal menyetujui mahasiswa terpilih.", "error");
@@ -2059,7 +2138,7 @@
         window.approveMahasiswa = async function(id) {
             try {
                 await dbOps.updateMahasiswa(id, { status: 'approved' });
-                showActionCountdownModal("MAHASISWA DISETUJUI", "Akun mahasiswa telah diaktifkan dan siap digunakan.", "fas fa-user-check");
+                showCenterCheckPopup("MAHASISWA DISETUJUI", "Akun mahasiswa telah diaktifkan.");
                 loadAdminData();
             } catch (e) {
                 showToast("Gagal menyetujui akun mahasiswa.", "error");
@@ -2071,7 +2150,7 @@
             if (!ok) return;
             try {
                 await dbOps.deleteMahasiswa(id);
-                showActionCountdownModal("AKUN DIHAPUS", "Data akun mahasiswa berhasil dihapus.", "fas fa-user-times");
+                showCenterCheckPopup("AKUN DIHAPUS", "Data akun mahasiswa berhasil dihapus.");
                 loadAdminData();
             } catch (e) {
                 showToast("Gagal menghapus akun mahasiswa.", "error");
@@ -2085,7 +2164,9 @@
             document.getElementById('edit-mhs-nama').value = m.nama;
             document.getElementById('edit-mhs-kota').value = m.kota;
             document.getElementById('edit-mhs-profesi').value = m.profesi;
-            document.getElementById('edit-mhs-pass').value = m.password;
+            const passInput = document.getElementById('edit-mhs-pass');
+            passInput.value = m.password;
+            passInput.type = 'password';
             document.getElementById('edit-mhs-modal').classList.remove('hidden');
         };
 
@@ -2104,7 +2185,7 @@
             try {
                 await dbOps.updateMahasiswa(id, { nama, kota, profesi, password });
                 closeEditMhsModal();
-                showActionCountdownModal("DATA DIPERBARUI", "Perubahan data mahasiswa berhasil disimpan.", "fas fa-user-edit");
+                showCenterCheckPopup("DATA DIPERBARUI", "Perubahan data mahasiswa berhasil disimpan.");
                 loadAdminData();
             } catch (err) {
                 showToast("Gagal memperbarui data mahasiswa.", "error");
