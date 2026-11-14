@@ -472,6 +472,17 @@
                             <p class="text-xs opacity-60 italic">Memuat daftar mahasiswa...</p>
                         </div>
                     </div>
+
+                    <!-- Tombol Dropdown Daftar Mahasiswa Belum Kirim Kehadiran -->
+                    <div class="mt-3 pt-3 border-t border-black/10 dark:border-white/10">
+                        <button type="button" onclick="toggleUnsubmittedListDropdown()" class="w-full flex items-center justify-between text-xs md:text-sm font-semibold text-orange-600 dark:text-orange-400 hover:opacity-80 transition-opacity py-1">
+                            <span><i class="fas fa-user-clock mr-1.5"></i> Lihat Daftar Mahasiswa Belum Kirim Kehadiran (<span id="unsubmitted-count-badge">0</span>)</span>
+                            <i id="unsubmitted-dropdown-icon" class="fas fa-chevron-down transition-transform duration-200"></i>
+                        </button>
+                        <div id="unsubmitted-mhs-dropdown-list" class="hidden mt-3 space-y-2 max-h-60 overflow-y-auto pr-1">
+                            <p class="text-xs opacity-60 italic">Memuat daftar mahasiswa...</p>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="glass p-5 md:p-6 rounded-2xl shadow-sm mt-4 md:mt-6">
@@ -1447,6 +1458,17 @@
             }
         };
 
+        window.toggleUnpublishedOrUnsubmittedList = function() {};
+        window.toggleUnsubmittedListDropdown = function() {
+            const listEl = document.getElementById('unsubmitted-mhs-dropdown-list');
+            const iconEl = document.getElementById('unsubmitted-dropdown-icon');
+            if (!listEl) return;
+            listEl.classList.toggle('hidden');
+            if (iconEl) {
+                iconEl.classList.toggle('rotate-180');
+            }
+        };
+
         async function loadDashboard() {
             try {
                 const [settings, mhsList, hadirList] = await Promise.all([
@@ -1512,6 +1534,38 @@
                                 <span class="text-green-600 dark:text-green-400 font-bold"><i class="fas fa-check-circle mr-1"></i>Hadir</span>
                             </div>
                         `).join('');
+                    }
+                }
+
+                // Render Dropdown Daftar Mahasiswa Belum Kirim Kehadiran (Sesi Terakhir)
+                const unsubmittedListEl = document.getElementById('unsubmitted-mhs-dropdown-list');
+                const unsubmittedBadgeEl = document.getElementById('unsubmitted-count-badge');
+                if (unsubmittedListEl) {
+                    if (!lastSesiName) {
+                        if (unsubmittedBadgeEl) unsubmittedBadgeEl.innerText = '0';
+                        unsubmittedListEl.innerHTML = `<p class="text-xs opacity-60 italic">Belum ada sesi pertemuan terjadwal.</p>`;
+                    } else {
+                        const submittedIds = new Set(
+                            hadirList
+                                .filter(h => h.pertemuan === lastSesiName && h.status !== 'rejected')
+                                .map(h => h.idMhs)
+                        );
+                        const unsubmittedMhs = activeMhs.filter(m => !submittedIds.has(m.id));
+                        if (unsubmittedBadgeEl) unsubmittedBadgeEl.innerText = unsubmittedMhs.length;
+
+                        if (unsubmittedMhs.length === 0) {
+                            unsubmittedListEl.innerHTML = `<p class="text-xs text-green-600 dark:text-green-400 font-semibold"><i class="fas fa-check-double mr-1"></i>Semua mahasiswa aktif sudah mengirim kehadiran untuk ${escapeHTML(lastSesiName)}.</p>`;
+                        } else {
+                            unsubmittedListEl.innerHTML = unsubmittedMhs.map((m, idx) => `
+                                <div class="flex items-center justify-between text-xs p-2 rounded-lg bg-orange-500/10 border border-orange-500/20">
+                                    <div>
+                                        <span class="font-semibold">${idx + 1}. ${escapeHTML(m.nama)}</span>
+                                        <span class="block text-[10px] opacity-70">${escapeHTML(m.kota || '-')} • ${escapeHTML(m.profesi || '-')}</span>
+                                    </div>
+                                    <span class="text-orange-600 dark:text-orange-400 font-bold whitespace-nowrap"><i class="fas fa-clock mr-1"></i>Belum Kirim</span>
+                                </div>
+                            `).join('');
+                        }
                     }
                 }
 
