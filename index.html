@@ -344,12 +344,12 @@
     </div>
 
     <!-- MAIN APP WRAPPER -->
-    <div class="flex h-screen w-full pt-5" id="app-wrapper">
+    <div class="flex h-screen w-full" id="app-wrapper">
         
         <!-- SIDEBAR (Desktop) -->
         <aside class="hidden md:flex flex-col w-64 h-full glass border-r shadow-sm z-40 fixed">
             <div class="p-6 flex items-center gap-3 cursor-pointer" onclick="showPage('dashboard', 'Dashboard')">
-                <div class="bg-corporate-600 text-white p-2 rounded-lg"><i class="fas fa-graduation-cap text-xl"></i></div>
+                <div id="desktop-logo-box" class="bg-corporate-600 text-white p-2 rounded-lg flex items-center justify-center overflow-hidden shrink-0"><i class="fas fa-graduation-cap text-xl"></i></div>
                 <h1 class="text-xl font-bold tracking-tight" id="app-logo-title">HadirKuliah</h1>
             </div>
             <nav class="flex-1 px-4 space-y-2 mt-4" id="desktop-nav">
@@ -366,12 +366,12 @@
         </nav>
 
         <!-- MAIN CONTENT AREA -->
-        <main id="main-scroll-area" class="flex-1 h-full md:ml-64 overflow-y-auto hide-scroll pb-24 md:pb-6 relative">
+        <main id="main-scroll-area" class="flex-1 h-full md:ml-72 overflow-y-auto hide-scroll pb-24 md:pb-6 relative">
             
             <!-- HEADER (Mobile/Desktop Top Bar) -->
             <header class="sticky top-0 z-30 glass px-4 md:px-6 py-3 md:py-4 flex flex-wrap justify-between items-center shadow-sm gap-3 border-b">
                 <div class="flex items-center gap-3">
-                    <div class="bg-corporate-600 text-white p-2 rounded-lg md:hidden"><i class="fas fa-graduation-cap text-sm"></i></div>
+                    <div id="mobile-logo-box" class="bg-corporate-600 text-white p-2 rounded-lg md:hidden flex items-center justify-center overflow-hidden shrink-0"><i class="fas fa-graduation-cap text-sm"></i></div>
                     <div class="flex flex-col">
                         <h1 class="text-lg font-bold leading-tight md:hidden" id="mobile-app-title">HadirKuliah</h1>
                         <h2 class="text-sm md:text-xl font-bold truncate" id="page-title">Dashboard</h2>
@@ -679,6 +679,20 @@
                     <h3 class="text-lg font-bold mb-4 border-b pb-2"><i class="fas fa-cog mr-2"></i> Pengaturan Aplikasi & Mata Kuliah</h3>
                     <form id="form-admin-settings" class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div><label class="block text-xs font-medium">Judul Aplikasi (Logo)</label><input type="text" id="set-apptitle" class="w-full px-3 py-2 text-sm rounded border bg-transparent outline-none focus:border-corporate-500"></div>
+                        <div>
+                            <label class="block text-xs font-medium">Upload Logo Aplikasi (Live dari Desktop)</label>
+                            <div class="flex items-center gap-2 mt-1">
+                                <img id="set-logo-preview" src="" alt="Preview Logo" class="w-9 h-9 rounded-lg object-cover border hidden">
+                                <input type="file" id="set-logo-file" accept="image/*" class="hidden">
+                                <input type="hidden" id="set-logo-base64">
+                                <button type="button" onclick="document.getElementById('set-logo-file').click()" class="bg-corporate-600 hover:bg-corporate-700 text-white text-xs font-bold py-2 px-3 rounded-lg shadow transition-colors flex items-center gap-1.5">
+                                    <i class="fas fa-upload"></i> Pilih Logo
+                                </button>
+                                <button type="button" id="btn-reset-logo" onclick="resetAppLogo()" class="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-white text-xs font-bold py-2 px-2.5 rounded-lg transition-colors hidden" title="Kembalikan Ikon Default">
+                                    <i class="fas fa-undo"></i>
+                                </button>
+                            </div>
+                        </div>
                         <div><label class="block text-xs font-medium">Universitas / Institusi</label><input type="text" id="set-univ" class="w-full px-3 py-2 text-sm rounded border bg-transparent outline-none focus:border-corporate-500"></div>
                         <div><label class="block text-xs font-medium">Semester</label><input type="text" id="set-semester" class="w-full px-3 py-2 text-sm rounded border bg-transparent outline-none focus:border-corporate-500"></div>
                         <div><label class="block text-xs font-medium">Nama Mata Kuliah</label><input type="text" id="set-matkul" class="w-full px-3 py-2 text-sm rounded border bg-transparent outline-none focus:border-corporate-500"></div>
@@ -908,7 +922,7 @@
 
         let mockData = {
             settings: { 
-                appTitle: "HadirKuliah", univ: "Universitas Indonesia", semester: "Ganjil 2026", 
+                appTitle: "HadirKuliah", logoUrl: "", univ: "Universitas Indonesia", semester: "Ganjil 2026", 
                 matkul: "Kecerdasan Buatan", dosen: "Dr. Asep Sunarya", koor: "Dimas", wa: "62812345678",
                 sesi: [
                     { nama: "Pertemuan 1", tanggal: "2026-11-14", jam: "08:00 - 10:00", tipe: "Online" },
@@ -1039,6 +1053,30 @@
                 .replace(/>/g, '&gt;')
                 .replace(/"/g, '&quot;')
                 .replace(/'/g, '&#39;');
+        };
+
+        window.applyAppLogoUI = function(logoUrl) {
+            const deskBox = document.getElementById('desktop-logo-box');
+            const mobBox = document.getElementById('mobile-logo-box');
+            if (logoUrl) {
+                if (deskBox) {
+                    deskBox.className = "w-10 h-10 rounded-lg flex items-center justify-center overflow-hidden shrink-0 shadow-sm";
+                    deskBox.innerHTML = `<img src="${logoUrl}" alt="Logo" class="w-full h-full object-cover">`;
+                }
+                if (mobBox) {
+                    mobBox.className = "w-8 h-8 rounded-lg md:hidden flex items-center justify-center overflow-hidden shrink-0 shadow-sm";
+                    mobBox.innerHTML = `<img src="${logoUrl}" alt="Logo" class="w-full h-full object-cover">`;
+                }
+            } else {
+                if (deskBox) {
+                    deskBox.className = "bg-corporate-600 text-white p-2 rounded-lg flex items-center justify-center overflow-hidden shrink-0";
+                    deskBox.innerHTML = `<i class="fas fa-graduation-cap text-xl"></i>`;
+                }
+                if (mobBox) {
+                    mobBox.className = "bg-corporate-600 text-white p-2 rounded-lg md:hidden flex items-center justify-center overflow-hidden shrink-0";
+                    mobBox.innerHTML = `<i class="fas fa-graduation-cap text-sm"></i>`;
+                }
+            }
         };
 
         let toastTimeout = null;
@@ -1423,6 +1461,7 @@
                 const mobTitleEl = document.getElementById('mobile-app-title');
                 if (logoTitleEl) logoTitleEl.innerText = appTitle;
                 if (mobTitleEl) mobTitleEl.innerText = appTitle;
+                applyAppLogoUI(settings.logoUrl || '');
 
                 const bannerEl = document.getElementById('dash-settings-banner');
                 if (bannerEl && settings.matkul) {
@@ -1869,6 +1908,19 @@
                 document.getElementById('set-koor').value = settings.koor || '';
                 document.getElementById('set-wa').value = settings.wa || '';
 
+                const logoUrl = settings.logoUrl || '';
+                document.getElementById('set-logo-base64').value = logoUrl;
+                const logoPrev = document.getElementById('set-logo-preview');
+                const btnResetLogo = document.getElementById('btn-reset-logo');
+                if (logoUrl) {
+                    if (logoPrev) { logoPrev.src = logoUrl; logoPrev.classList.remove('hidden'); }
+                    if (btnResetLogo) btnResetLogo.classList.remove('hidden');
+                } else {
+                    if (logoPrev) { logoPrev.src = ''; logoPrev.classList.add('hidden'); }
+                    if (btnResetLogo) btnResetLogo.classList.add('hidden');
+                }
+                applyAppLogoUI(logoUrl);
+
                 renderSesiListTable();
 
                 // Dropdown Download Excel
@@ -2030,10 +2082,52 @@
             renderSesiListTable();
         };
 
+        document.getElementById('set-logo-file')?.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    const maxDim = 256;
+                    const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
+                    canvas.width = img.width * scale;
+                    canvas.height = img.height * scale;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    const dataUrl = canvas.toDataURL('image/png', 0.85);
+
+                    document.getElementById('set-logo-base64').value = dataUrl;
+                    const prev = document.getElementById('set-logo-preview');
+                    const btnReset = document.getElementById('btn-reset-logo');
+                    if (prev) { prev.src = dataUrl; prev.classList.remove('hidden'); }
+                    if (btnReset) btnReset.classList.remove('hidden');
+                    applyAppLogoUI(dataUrl);
+                    showToast("Pratinjau logo diperbarui secara live. Klik 'Simpan Pengaturan' untuk menyimpan permanen.", "info");
+                };
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+
+        window.resetAppLogo = function() {
+            document.getElementById('set-logo-base64').value = '';
+            const fileInput = document.getElementById('set-logo-file');
+            if (fileInput) fileInput.value = '';
+            const prev = document.getElementById('set-logo-preview');
+            const btnReset = document.getElementById('btn-reset-logo');
+            if (prev) { prev.src = ''; prev.classList.add('hidden'); }
+            if (btnReset) btnReset.classList.add('hidden');
+            applyAppLogoUI('');
+            showToast("Logo dikembalikan ke ikon bawaan. Klik 'Simpan Pengaturan' untuk menyimpan.", "info");
+        };
+
         document.getElementById('form-admin-settings')?.addEventListener('submit', async (e) => {
             e.preventDefault();
             const payload = {
                 appTitle: document.getElementById('set-apptitle').value.trim() || "HadirKuliah",
+                logoUrl: document.getElementById('set-logo-base64').value || "",
                 univ: document.getElementById('set-univ').value.trim(),
                 semester: document.getElementById('set-semester').value.trim(),
                 matkul: document.getElementById('set-matkul').value.trim(),
@@ -2045,7 +2139,8 @@
 
             try {
                 await dbOps.saveSettings(payload);
-                showCenterCheckPopup("PENGATURAN DISIMPAN", "Data mata kuliah & sesi berhasil diperbarui.");
+                applyAppLogoUI(payload.logoUrl);
+                showCenterCheckPopup("PENGATURAN DISIMPAN", "Data mata kuliah, logo & sesi berhasil diperbarui.");
                 loadAdminData();
             } catch (err) {
                 showToast("Gagal menyimpan pengaturan.", "error");
